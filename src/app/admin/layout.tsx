@@ -26,6 +26,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/pedidos', label: 'Gestor de Pedidos', icon: ShoppingBag },
     { href: '/admin/produtos', label: 'Gestor de Produtos', icon: Package },
+    { href: '/admin/lotes', label: 'Gestor de Lotes & Laudos', icon: ShieldCheck },
     { href: '/admin/frete', label: 'Gestor de Frete & Motoboy', icon: Truck },
     { href: '/admin/configuracoes', label: 'Configurações Gerais & APIs', icon: Settings },
   ];
