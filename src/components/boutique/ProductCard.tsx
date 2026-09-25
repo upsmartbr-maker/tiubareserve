@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Product } from '@/types';
 import { useStore } from '@/lib/store';
+import { useCart } from '@/context/CartContext';
 import { 
   ShoppingBag, 
   Share2, 
@@ -24,18 +25,30 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart, t } = useStore();
+  const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [shareOpen, setShareOpen] = useState(false);
   const [sommelierOpen, setSommelierOpen] = useState(false);
   const [added, setAdded] = useState(false);
 
+  const currentPrice = product.promo_price || product.price;
+
   const handleAdd = () => {
     addToCart(product, quantity);
+    addItem(
+      {
+        id: product.id,
+        title: product.name,
+        subtitle: product.subtitle,
+        price: currentPrice,
+        image: product.images[0] || '/images/hero-bottle.jpg',
+        volume: product.volume,
+      },
+      quantity
+    );
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
-
-  const currentPrice = product.promo_price || product.price;
 
   return (
     <>

@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
+import { useCart } from '@/context/CartContext';
 import { 
   Sparkles, 
   ShoppingBag, 
@@ -28,6 +29,7 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const slug = params?.slug as string;
   const { getProductBySlug, addToCart, settings, t } = useStore();
+  const { addItem } = useCart();
 
   const product = getProductBySlug(slug);
 
@@ -67,11 +69,23 @@ export default function ProductDetailPage() {
   };
 
   const handleAddToCart = (redirect = false) => {
+    if (!product) return;
     addToCart(product, quantity);
+    addItem(
+      {
+        id: product.id,
+        title: product.name,
+        subtitle: product.subtitle,
+        price: currentPrice,
+        image: product.images[0] || '/images/hero-bottle.jpg',
+        volume: product.volume,
+      },
+      quantity
+    );
     setAdded(true);
     setTimeout(() => {
       setAdded(false);
-      if (redirect) router.push('/carrinho');
+      if (redirect) router.push('/checkout');
     }, 800);
   };
 

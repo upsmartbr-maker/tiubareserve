@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useStore } from '@/lib/store';
+import { useCart } from '@/context/CartContext';
 import { 
   ShoppingBag, 
   User, 
@@ -20,7 +21,10 @@ import {
 export default function Navbar() {
   const pathname = usePathname();
   const { cartCount, lang, setLang, t, currentUser, isAdmin, settings } = useStore();
+  const { openCart, totalCount } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const displayCartCount = totalCount > 0 ? totalCount : cartCount;
 
   const navLinks = [
     { href: '/', label: t('Home', 'Home') },
@@ -120,18 +124,20 @@ export default function Navbar() {
           </Link>
 
           {/* Shopping Cart Button */}
-          <Link
-            href="/carrinho"
+          <button
+            type="button"
+            onClick={openCart}
             className="relative p-2.5 rounded-full border border-gold-400/20 bg-onyx-850 hover:border-gold-400/60 text-gold-400 transition-all group"
             title="Ver Carrinho de Compras"
+            aria-label="Abrir Carrinho de Compras"
           >
             <ShoppingBag className="w-5 h-5 group-hover:scale-105 transition-transform" />
-            {cartCount > 0 && (
+            {displayCartCount > 0 && (
               <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-amber-honey to-gold-400 text-onyx-950 text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-lg font-sans">
-                {cartCount}
+                {displayCartCount}
               </span>
             )}
-          </Link>
+          </button>
 
           {/* Mobile Hamburger Toggle */}
           <button

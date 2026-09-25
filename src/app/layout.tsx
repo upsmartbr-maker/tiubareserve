@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { StoreProvider } from '@/lib/store';
+import { CartProvider } from '@/context/CartContext';
+import CartDrawer from '@/components/CartDrawer';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 
@@ -31,11 +33,14 @@ export default function RootLayout({
     <html lang="pt-BR" className="dark">
       <body className="bg-onyx-950 text-foreground min-h-screen flex flex-col antialiased selection:bg-gold-400 selection:text-onyx-950">
         <StoreProvider>
-          <Navbar />
-          <main className="flex-1 w-full">
-            {children}
-          </main>
-          <Footer />
+          <CartProvider>
+            <Navbar />
+            <CartDrawer />
+            <main className="flex-1 w-full">
+              {children}
+            </main>
+            <Footer />
+          </CartProvider>
         </StoreProvider>
       </body>
     </html>
