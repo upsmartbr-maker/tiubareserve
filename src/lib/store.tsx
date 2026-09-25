@@ -207,7 +207,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const addProduct = (prod: Product) => {
     setProducts(prev => {
       const updated = [prod, ...prev];
-      if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.PRODUCTS, JSON.stringify(updated));
+      if (isClient) {
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEYS.PRODUCTS, JSON.stringify(updated));
+        } catch (e) {
+          console.error("Limite do LocalStorage excedido ao salvar produtos:", e);
+          alert("Aviso: A imagem é muito pesada para o armazenamento local. A foto foi comprimida, mas tente usar uma imagem mais leve ou o Supabase Storage.");
+        }
+      }
       return updated;
     });
   };
@@ -215,7 +222,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const updateProduct = (prod: Product) => {
     setProducts(prev => {
       const updated = prev.map(p => (p.id === prod.id ? prod : p));
-      if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.PRODUCTS, JSON.stringify(updated));
+      if (isClient) {
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEYS.PRODUCTS, JSON.stringify(updated));
+        } catch (e) {
+          console.error("Limite do LocalStorage excedido ao salvar produtos:", e);
+          alert("Aviso: A imagem é muito pesada para o armazenamento local. A foto foi comprimida, mas tente usar uma imagem mais leve ou o Supabase Storage.");
+        }
+      }
       return updated;
     });
   };
@@ -223,7 +237,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const deleteProduct = (id: string) => {
     setProducts(prev => {
       const updated = prev.filter(p => p.id !== id);
-      if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.PRODUCTS, JSON.stringify(updated));
+      if (isClient) {
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEYS.PRODUCTS, JSON.stringify(updated));
+        } catch (e) {
+          console.error("Erro ao sincronizar exclusão com localStorage:", e);
+        }
+      }
       return updated;
     });
   };

@@ -1,6 +1,6 @@
 "use client";
-
 import React, { useState, useRef } from "react";
+import { compressImage } from "@/lib/imageCompressor";
 
 export interface ProductFormData {
   id: string;
@@ -32,19 +32,19 @@ export default function FormProdutoUpload({ initialData, onSave, onCancel }: Pro
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Processar arquivo selecionado ou arrastado
-  const handleProcessFile = (file: File) => {
+  const handleProcessFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {
       alert("Por favor, selecione um arquivo de imagem válido (PNG, JPG, WEBP).");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (e.target?.result) {
-        setImagePreview(e.target.result as string);
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      const compressed = await compressImage(file, 800, 800, 0.75);
+      setImagePreview(compressed);
+    } catch (error) {
+      console.error("Erro ao comprimir imagem:", error);
+      alert("Erro ao processar imagem.");
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

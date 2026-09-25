@@ -17,6 +17,7 @@ import {
   FlaskConical
 } from 'lucide-react';
 import { Product } from '@/types';
+import { compressImage } from '@/lib/imageCompressor';
 
 export default function AdminProductsPage() {
   const { products, addProduct, updateProduct, deleteProduct, t } = useStore();
@@ -377,7 +378,7 @@ export default function AdminProductsPage() {
                   {[0, 1, 2, 3].map((idx) => {
                     const currentPhoto = editingProduct.images?.[idx] || "";
 
-                    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
                       const file = e.target.files?.[0];
                       if (!file) return;
 
@@ -386,18 +387,20 @@ export default function AdminProductsPage() {
                         return;
                       }
 
-                      const reader = new FileReader();
-                      reader.onload = (event) => {
-                        if (event.target?.result) {
-                          setEditingProduct((prev) => {
-                            if (!prev) return null;
-                            const newImages = [...(prev.images || [])];
-                            newImages[idx] = event.target?.result as string;
-                            return { ...prev, images: newImages };
-                          });
-                        }
-                      };
-                      reader.readAsDataURL(file);
+                      try {
+                        // Redimensiona para no máximo 800x800 e comprime em webp 75%
+                        const compressedBase64 = await compressImage(file, 800, 800, 0.75);
+
+                        setEditingProduct((prev) => {
+                          if (!prev) return null;
+                          const newImages = [...(prev.images || [])];
+                          newImages[idx] = compressedBase64;
+                          return { ...prev, images: newImages };
+                        });
+                      } catch (error) {
+                        console.error("Erro ao comprimir imagem:", error);
+                        alert("Erro ao processar imagem.");
+                      }
                     };
 
                     const handleRemovePhoto = () => {
