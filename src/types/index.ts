@@ -43,6 +43,9 @@ export interface Product {
   stock: number;
   volume: string;
   images: string[];
+  image?: string;
+  foto1?: string;
+  title?: string;
   sensory_profile: SensoryProfile;
   nutritional_info: NutritionalInfo;
   active: boolean;

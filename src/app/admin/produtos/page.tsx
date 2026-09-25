@@ -92,10 +92,18 @@ export default function AdminProductsPage() {
     e.preventDefault();
     if (!editingProduct) return;
 
+    const mainPhoto = editingProduct.images?.[0] || editingProduct.image || editingProduct.foto1 || '';
+    const productToSave: Product = {
+      ...editingProduct,
+      image: mainPhoto,
+      foto1: mainPhoto,
+      title: editingProduct.name,
+    };
+
     if (isNew) {
-      addProduct(editingProduct);
+      addProduct(productToSave);
     } else {
-      updateProduct(editingProduct);
+      updateProduct(productToSave);
     }
 
     setEditingProduct(null);

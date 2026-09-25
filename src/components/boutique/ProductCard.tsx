@@ -34,6 +34,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const currentPrice = product.promo_price || product.price;
 
   const handleAdd = () => {
+    const mainImg = product.images?.[0] || product.image || (product as any).foto1 || '/images/hero-bottle.jpg';
     addToCart(product, quantity);
     addItem(
       {
@@ -41,7 +42,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         title: product.name,
         subtitle: product.subtitle,
         price: currentPrice,
-        image: product.images[0] || '/images/hero-bottle.jpg',
+        image: mainImg,
         volume: product.volume,
       },
       quantity
@@ -49,6 +50,8 @@ export default function ProductCard({ product }: ProductCardProps) {
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
+
+  const mainPhoto = product.images?.[0] || product.image || (product as any).foto1 || '/images/hero-bottle.jpg';
 
   return (
     <>
@@ -77,9 +80,10 @@ export default function ProductCard({ product }: ProductCardProps) {
         {/* Product Image Stage */}
         <Link href={`/produto/${product.slug}`} className="relative w-full aspect-[4/5] overflow-hidden bg-onyx-900 block">
           <Image
-            src={product.images[0] || '/images/hero-bottle.jpg'}
+            src={mainPhoto}
             alt={product.name}
             fill
+            unoptimized={mainPhoto.startsWith('data:')}
             className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-onyx-850 via-transparent to-transparent opacity-60" />

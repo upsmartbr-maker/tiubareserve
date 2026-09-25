@@ -116,22 +116,28 @@ export default function ProductDetailPage() {
               onMouseLeave={() => setIsZoomed(false)}
               onMouseMove={handleMouseMove}
             >
-              <Image
-                src={product.images[selectedImage] || product.images[0]}
-                alt={product.name}
-                fill
-                className={`object-cover object-center transition-all duration-300 ${
-                  isZoomed ? 'scale-150' : 'scale-100'
-                }`}
-                style={
-                  isZoomed
-                    ? {
-                        transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                      }
-                    : undefined
-                }
-                priority
-              />
+              {(() => {
+                const currentImg = product.images?.[selectedImage] || product.images?.[0] || product.image || '/images/hero-bottle.jpg';
+                return (
+                  <Image
+                    src={currentImg}
+                    alt={product.name}
+                    fill
+                    unoptimized={currentImg.startsWith('data:')}
+                    className={`object-cover object-center transition-all duration-300 ${
+                      isZoomed ? 'scale-150' : 'scale-100'
+                    }`}
+                    style={
+                      isZoomed
+                        ? {
+                            transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
+                          }
+                        : undefined
+                    }
+                    priority
+                  />
+                );
+              })()}
 
               {/* Hover Zoom Tip Badge */}
               <div className="absolute top-4 right-4 bg-onyx-950/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-gold-400/20 text-[10px] text-gold-300 font-sans flex items-center gap-1.5 pointer-events-none">
@@ -147,7 +153,7 @@ export default function ProductDetailPage() {
 
             {/* Thumbnail Selector (4 photos) */}
             <div className="grid grid-cols-4 gap-4">
-              {product.images.map((img, idx) => (
+              {(product.images || []).map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedImage(idx)}
@@ -157,7 +163,13 @@ export default function ProductDetailPage() {
                       : 'border-gold-400/20 hover:border-gold-400/50 opacity-70 hover:opacity-100'
                   }`}
                 >
-                  <Image src={img} alt="" fill className="object-cover" />
+                  <Image 
+                    src={img || '/images/hero-bottle.jpg'} 
+                    alt="" 
+                    fill 
+                    unoptimized={Boolean(img?.startsWith('data:'))}
+                    className="object-cover" 
+                  />
                 </button>
               ))}
             </div>
