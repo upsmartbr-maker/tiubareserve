@@ -364,30 +364,118 @@ export default function AdminProductsPage() {
                 </div>
               </div>
 
-              {/* Photos URLs (Up to 4) */}
+              {/* GALERIA DE FOTOS COM UPLOAD DO PC OU URL */}
               <div className="space-y-3 border-t border-white/5 pt-4">
-                <span className="text-xs uppercase tracking-wider text-gold-400 font-bold block">
-                  Galeria de Fotos em Alta Resolução (Até 4 Fotos)
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {[0, 1, 2, 3].map((idx) => (
-                    <div key={idx}>
-                      <label className="text-[10px] text-stone-400 font-mono block mb-1">
-                        Foto {idx + 1} URL:
-                      </label>
-                      <input
-                        type="text"
-                        value={editingProduct.images[idx] || ''}
-                        onChange={(e) => {
-                          const newImages = [...editingProduct.images];
-                          newImages[idx] = e.target.value;
-                          setEditingProduct({ ...editingProduct, images: newImages });
-                        }}
-                        placeholder={`/images/products/...`}
-                        className="w-full bg-onyx-950 border border-gold-400/20 rounded-lg px-3 py-1.5 text-xs text-foreground font-mono focus:outline-none focus:border-gold-400"
-                      />
-                    </div>
-                  ))}
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-semibold text-[#d6b26d] uppercase tracking-wider block">
+                    Galeria de Fotos em Alta Resolução (Até 4 Fotos)
+                  </label>
+                  <span className="text-[10px] text-[#8e816f]">Clique no card para enviar do PC</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {[0, 1, 2, 3].map((idx) => {
+                    const currentPhoto = editingProduct.images?.[idx] || "";
+
+                    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      if (!file.type.startsWith("image/")) {
+                        alert("Por favor, selecione um arquivo de imagem válido.");
+                        return;
+                      }
+
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        if (event.target?.result) {
+                          setEditingProduct((prev) => {
+                            if (!prev) return null;
+                            const newImages = [...(prev.images || [])];
+                            newImages[idx] = event.target?.result as string;
+                            return { ...prev, images: newImages };
+                          });
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    };
+
+                    const handleRemovePhoto = () => {
+                      setEditingProduct((prev) => {
+                        if (!prev) return null;
+                        const newImages = [...(prev.images || [])];
+                        newImages[idx] = "";
+                        return { ...prev, images: newImages };
+                      });
+                    };
+
+                    const handleUrlChange = (val: string) => {
+                      setEditingProduct((prev) => {
+                        if (!prev) return null;
+                        const newImages = [...(prev.images || [])];
+                        newImages[idx] = val;
+                        return { ...prev, images: newImages };
+                      });
+                    };
+
+                    return (
+                      <div
+                        key={idx}
+                        className="relative bg-[#110e0b] border border-[#2b2216] rounded-md p-2 flex flex-col justify-between group hover:border-[#d6b26d]/60 transition-all"
+                      >
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[10px] uppercase font-mono text-[#a89a85]">Foto {idx + 1}</span>
+                          {currentPhoto && (
+                            <button
+                              type="button"
+                              onClick={handleRemovePhoto}
+                              className="text-[10px] text-[#d35b5b] hover:underline"
+                            >
+                              Remover
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Área de Visualização e Clique para Upload */}
+                        <label className="relative aspect-square w-full bg-[#070605] border border-dashed border-[#382d1e] rounded flex flex-col items-center justify-center cursor-pointer hover:border-[#d6b26d] overflow-hidden group-hover:bg-[#16120e] transition-colors">
+                          <input
+                            type="file"
+                            accept="image/png, image/jpeg, image/webp"
+                            onChange={handleFileChange}
+                            className="hidden"
+                          />
+
+                          {currentPhoto ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img
+                              src={currentPhoto}
+                              alt={`Foto ${idx + 1}`}
+                              className="w-full h-full object-contain p-1"
+                            />
+                          ) : (
+                            <div className="flex flex-col items-center text-center p-2">
+                              <svg className="w-5 h-5 text-[#8e816f] mb-1 group-hover:text-[#d6b26d] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                              </svg>
+                              <span className="text-[10px] text-[#8e816f] group-hover:text-[#ded4c3]">
+                                Upload PC
+                              </span>
+                            </div>
+                          )}
+                        </label>
+
+                        {/* Input de URL manual mantido como alternativa na base */}
+                        <input
+                          type="text"
+                          placeholder="ou cole a URL"
+                          value={currentPhoto.startsWith("data:") ? "Arquivo carregado do PC" : currentPhoto}
+                          disabled={currentPhoto.startsWith("data:")}
+                          onChange={(e) => handleUrlChange(e.target.value)}
+                          className="mt-2 w-full bg-[#0a0806] border border-[#261f15] text-[10px] text-[#ded4c3] px-2 py-1 rounded outline-none focus:border-[#d6b26d]"
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
