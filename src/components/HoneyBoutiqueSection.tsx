@@ -13,13 +13,19 @@ export default function HoneyBoutiqueSection() {
   const { addItem } = useCart();
 
   const handleOpenDetail = (prod: Product) => {
-    const mainImage = prod.images?.[0] || prod.image || prod.foto1 || "/images/hero-bottle.jpg";
+    const photos = prod.images || [];
+    const mainImage = photos[0] || prod.image || prod.foto1 || "/images/hero-bottle.jpg";
     const detail: ProductDetail = {
       id: prod.id,
       title: prod.name || prod.title || "Mel de Tiúba",
       subtitle: prod.subtitle || prod.concept || "",
       price: prod.promo_price || prod.price,
       image: mainImage,
+      foto1: photos[0] || prod.foto1 || prod.image || "",
+      foto2: photos[1] || "",
+      foto3: photos[2] || "",
+      foto4: photos[3] || "",
+      images: photos,
       volume: prod.volume || "150 ml (5.07 fl oz)",
       safra: "2026",
       origem: prod.biome || "Bioma Amazônia",

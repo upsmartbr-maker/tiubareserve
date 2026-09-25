@@ -10,6 +10,11 @@ export interface ProductDetail {
   subtitle: string;
   price: number;
   image: string;
+  foto1?: string;
+  foto2?: string;
+  foto3?: string;
+  foto4?: string;
+  images?: string[];
   volume: string;
   safra: string;
   origem: string;
@@ -32,10 +37,19 @@ export default function ProductQuickviewModal({
 }: ProductQuickviewModalProps) {
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
+  const [selectedPhoto, setSelectedPhoto] = useState<string>("");
 
-  // Resetar quantidade ao trocar de produto
+  // Resetar quantidade e foto selecionada ao trocar de produto
   useEffect(() => {
-    if (isOpen) setQuantity(1);
+    if (isOpen && product) {
+      setQuantity(1);
+      setSelectedPhoto(
+        product.foto1 ||
+        product.image ||
+        (product.images && product.images[0]) ||
+        "/images/hero-bottle.jpg"
+      );
+    }
   }, [isOpen, product]);
 
   // Fechar com a tecla ESC e travar scroll da página
@@ -63,7 +77,7 @@ export default function ProductQuickviewModal({
         id: product.id,
         title: product.title,
         price: product.price,
-        image: product.image || "/images/hero-bottle.jpg",
+        image: selectedPhoto || product.foto1 || product.image || "/images/hero-bottle.jpg",
         volume: product.volume,
       },
       quantity
@@ -102,13 +116,43 @@ export default function ProductQuickviewModal({
           </div>
 
           <div className="relative w-56 h-64 sm:w-64 sm:h-72 my-4">
-            <Image
-              src={product.image || "/images/hero-bottle.jpg"}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={selectedPhoto || product.foto1 || product.image || "/images/hero-bottle.jpg"}
               alt={product.title}
-              fill
-              className="object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)]"
-              priority
+              className="w-full h-full object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)]"
             />
+          </div>
+
+          {/* Miniaturas de Fotos do Produto */}
+          <div className="flex gap-2 mt-1 mb-4">
+            {/* Agrupa as fotos e remove qualquer item vazio, nulo ou indefinido */}
+            {[
+              product.foto1 || product.images?.[0] || product.image,
+              product.foto2 || product.images?.[1],
+              product.foto3 || product.images?.[2],
+              product.foto4 || product.images?.[3],
+            ]
+              .filter((foto): foto is string => Boolean(foto && foto.trim() !== ""))
+              .map((fotoUrl, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setSelectedPhoto(fotoUrl)}
+                  className={`relative w-14 h-14 rounded border overflow-hidden transition-all ${
+                    selectedPhoto === fotoUrl
+                      ? "border-[#d6b26d] scale-105"
+                      : "border-[#2c2317] hover:border-[#8e816f]"
+                  }`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={fotoUrl}
+                    alt={`Miniatura ${idx + 1}`}
+                    className="w-full h-full object-contain bg-[#0c0a08] p-1"
+                  />
+                </button>
+              ))}
           </div>
 
           <span className="text-[11px] uppercase tracking-[0.2em] text-[#b8ab96]">
