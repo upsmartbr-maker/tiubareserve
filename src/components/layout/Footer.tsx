@@ -97,9 +97,9 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/admin" className="text-gold-400/80 hover:text-gold-300 transition-colors flex items-center gap-1.5">
-                  <ShieldCheck className="w-3 h-3 text-gold-400" />
-                  <span>{t('Painel Administrativo', 'Admin Management Panel')}</span>
+                <Link href="/admin/login" className="text-stone-500 hover:text-stone-400 text-[11px] transition-colors flex items-center gap-1.5 pt-2">
+                  <ShieldCheck className="w-3 h-3 text-stone-500" />
+                  <span>{t('Acesso Restrito', 'Restricted Access')}</span>
                 </Link>
               </li>
             </ul>

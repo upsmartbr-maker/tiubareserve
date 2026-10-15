@@ -113,16 +113,6 @@ export default function Navbar() {
             <span className="font-semibold uppercase tracking-wider">{lang}</span>
           </button>
 
-          {/* Admin Direct Button (if admin or demo accessible) */}
-          <Link
-            href="/admin"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1 text-[11px] uppercase tracking-wider rounded-md border border-gold-500/30 bg-gold-500/10 text-gold-300 hover:bg-gold-500/20 transition-all"
-            title="Acesso ao Painel Administrativo"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-gold-400" />
-            <span>Admin</span>
-          </Link>
-
           {/* User Account / Login */}
           <Link
             href="/login"
@@ -196,15 +186,6 @@ export default function Navbar() {
             >
               <Sparkles className="w-3.5 h-3.5 text-gold-400" />
               <span>Área do Assinante (/minha-conta/assinatura)</span>
-            </Link>
-
-            <Link
-              href="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-xs uppercase tracking-luxury font-sans py-2 text-gold-300 flex items-center gap-2"
-            >
-              <ShieldCheck className="w-4 h-4 text-gold-400" />
-              <span>Painel Administrativo (/admin)</span>
             </Link>
           </div>
         </div>
