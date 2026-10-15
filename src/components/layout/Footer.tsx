@@ -77,6 +77,16 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/clube" className="text-gold-400 font-semibold hover:text-gold-300 transition-colors flex items-center gap-1.5">
+                  <span>✦ Clube de Assinatura Tiúba</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/minha-conta/assinatura" className="hover:text-gold-400 transition-colors">
+                  {t('Área do Assinante', 'Subscriber Portal')}
+                </Link>
+              </li>
+              <li>
                 <Link href="/rastreio" className="hover:text-gold-400 transition-colors">
                   {t('Rastreabilidade de Lote & Laudos', 'Batch Traceability & Lab Reports')}
                 </Link>

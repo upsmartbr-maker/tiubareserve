@@ -165,3 +165,91 @@ export interface SiteSettings {
   motoboy_price: number;
   motoboy_zip_prefixes: string; // Ex: "010,011,012,013,014,015,020,030,040,050"
 }
+
+export type SubscriptionInterval = 'month' | 'quarter' | 'year';
+export type SubscriptionStatus = 'active' | 'paused' | 'canceled' | 'past_due';
+export type ShipmentStatus = 'preparing' | 'shipped' | 'delivered';
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  interval: SubscriptionInterval;
+  tagline: string;
+  description: string;
+  features: string[];
+  bottles_count: number;
+  honey_desc: string;
+  magazine_desc: string;
+  artisan_gift_desc: string;
+  exclusive_perks?: string[];
+  is_featured?: boolean;
+  badge?: string;
+  active: boolean;
+}
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  user_email: string;
+  user_name: string;
+  user_phone: string;
+  plan_id: string;
+  plan_slug: string;
+  plan_name: string;
+  plan_price: number;
+  status: SubscriptionStatus;
+  payment_method: 'stripe' | 'pix';
+  stripe_subscription_id?: string;
+  current_period_start: string;
+  current_period_end: string;
+  next_billing_date: string;
+  shipping_address: ShippingAddress;
+  paused_until?: string;
+  pix_code?: string;
+  pix_qr_url?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface SubscriptionBoxHoneyAllocation {
+  plan_slug: string;
+  plan_name: string;
+  lot_codes: string[];
+  lot_titles: string[];
+}
+
+export interface SubscriptionBox {
+  id: string;
+  cycle_month: string;
+  cycle_year: string;
+  title: string;
+  description: string;
+  bee_magazine_theme: string;
+  bee_magazine_edition: number;
+  magazine_characters: string[];
+  artisan_gift_name: string;
+  artisan_gift_origin: string;
+  honey_allocations: SubscriptionBoxHoneyAllocation[];
+  created_at: string;
+}
+
+export interface SubscriptionShipment {
+  id: string;
+  subscription_id: string;
+  box_id: string;
+  subscriber_name: string;
+  subscriber_email: string;
+  subscriber_phone: string;
+  plan_slug: string;
+  plan_name: string;
+  shipping_address: ShippingAddress;
+  tracking_code?: string;
+  carrier: string;
+  status: ShipmentStatus;
+  shipped_at?: string;
+  delivered_at?: string;
+  created_at: string;
+}
+

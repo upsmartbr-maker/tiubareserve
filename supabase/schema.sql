@@ -164,3 +164,159 @@ INSERT INTO public.site_settings (key, value, type, description) VALUES
 ('motoboy_enabled', 'true', 'boolean', 'Ativar serviço motoboy em SP'),
 ('motoboy_price', '28.00', 'number', 'Preço do motoboy express SP')
 ON CONFLICT (key) DO NOTHING;
+
+-- ========================================================
+-- 6. CLUBE DE ASSINATURA RECORRENTE (TIÚBA CLUB)
+-- ========================================================
+
+-- 6.1 SUBSCRIPTION PLANS
+CREATE TABLE IF NOT EXISTS public.subscription_plans (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    slug VARCHAR(100) UNIQUE NOT NULL,
+    price NUMERIC(10, 2) NOT NULL,
+    interval VARCHAR(20) DEFAULT 'month' CHECK (interval IN ('month', 'quarter', 'year')),
+    tagline TEXT,
+    description TEXT,
+    features JSONB DEFAULT '[]'::jsonb,
+    is_featured BOOLEAN DEFAULT false,
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 6.2 SUBSCRIPTIONS (RECORRÊNCIA DO ASSINANTE)
+CREATE TABLE IF NOT EXISTS public.subscriptions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
+    plan_id UUID REFERENCES public.subscription_plans(id) ON DELETE RESTRICT,
+    status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'paused', 'canceled', 'past_due')),
+    payment_method VARCHAR(50) DEFAULT 'stripe' CHECK (payment_method IN ('stripe', 'pix')),
+    stripe_subscription_id VARCHAR(255),
+    current_period_start TIMESTAMP WITH TIME ZONE NOT NULL,
+    current_period_end TIMESTAMP WITH TIME ZONE NOT NULL,
+    shipping_address JSONB NOT NULL,
+    pix_code TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 6.3 SUBSCRIPTION BOXES (CURADORIA DA CAIXA DO MÊS - BOX PLANNER)
+CREATE TABLE IF NOT EXISTS public.subscription_boxes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    cycle_month VARCHAR(50) NOT NULL,
+    cycle_year VARCHAR(10) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    bee_magazine_theme VARCHAR(255) NOT NULL,
+    artisan_gift_name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 6.4 SUBSCRIPTION SHIPMENTS (GESTÃO DE ENVIOS DO CICLO)
+CREATE TABLE IF NOT EXISTS public.subscription_shipments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    subscription_id UUID REFERENCES public.subscriptions(id) ON DELETE CASCADE,
+    box_id UUID REFERENCES public.subscription_boxes(id) ON DELETE SET NULL,
+    tracking_code VARCHAR(100),
+    status VARCHAR(50) DEFAULT 'preparing' CHECK (status IN ('preparing', 'shipped', 'delivered')),
+    shipped_at TIMESTAMP WITH TIME ZONE,
+    delivered_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ========================================================
+-- RLS POLICIES FOR SUBSCRIPTION CLUB
+-- ========================================================
+
+ALTER TABLE public.subscription_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.subscription_boxes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.subscription_shipments ENABLE ROW LEVEL SECURITY;
+
+-- Plans: Public read, Admin manage
+CREATE POLICY "Public read subscription plans" ON public.subscription_plans
+    FOR SELECT USING (active = true OR auth.role() = 'service_role');
+
+CREATE POLICY "Admin write subscription plans" ON public.subscription_plans
+    FOR ALL USING (auth.jwt() ->> 'role' = 'admin' OR auth.role() = 'service_role');
+
+-- Boxes: Public read current, Admin manage
+CREATE POLICY "Public read subscription boxes" ON public.subscription_boxes
+    FOR SELECT USING (true);
+
+CREATE POLICY "Admin write subscription boxes" ON public.subscription_boxes
+    FOR ALL USING (auth.jwt() ->> 'role' = 'admin' OR auth.role() = 'service_role');
+
+-- Subscriptions: User read/insert own, Admin all
+CREATE POLICY "Users read own subscriptions" ON public.subscriptions
+    FOR SELECT USING (user_id = auth.uid() OR auth.jwt() ->> 'role' = 'admin' OR auth.role() = 'service_role');
+
+CREATE POLICY "Users create own subscriptions" ON public.subscriptions
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Users update own subscriptions" ON public.subscriptions
+    FOR UPDATE USING (user_id = auth.uid() OR auth.jwt() ->> 'role' = 'admin' OR auth.role() = 'service_role');
+
+-- Shipments: User read own, Admin manage
+CREATE POLICY "Users read own shipments" ON public.subscription_shipments
+    FOR SELECT USING (auth.role() = 'service_role' OR auth.jwt() ->> 'role' = 'admin' OR subscription_id IN (
+        SELECT id FROM public.subscriptions WHERE user_id = auth.uid()
+    ));
+
+CREATE POLICY "Admin manage shipments" ON public.subscription_shipments
+    FOR ALL USING (auth.jwt() ->> 'role' = 'admin' OR auth.role() = 'service_role');
+
+-- ========================================================
+-- INITIAL SEED FOR SUBSCRIPTION PLANS & CURRENT BOX
+-- ========================================================
+
+INSERT INTO public.subscription_plans (name, slug, price, interval, tagline, description, features, is_featured, active) VALUES
+(
+    'Néctar Essencial',
+    'nectar-essencial',
+    99.00,
+    'month',
+    'A pureza da Tiúba para o dia a dia familiar',
+    'A porta de entrada ideal para degustar méis nativos da Amazônia com leveza, acompanhado da revistinha infantil.',
+    '["1 Frasco de Mel Nobre Tiúba 150ml (safra rotativa)", "1 Edição da Revistinha Infantil As Aventuras da Tiúba", "1 Brinde Botânico (sementes melíferas nativas)", "Sem fidelidade: pause ou cancele quando quiser"]'::jsonb,
+    false,
+    true
+),
+(
+    'Colmeia Amazônica',
+    'colmeia-amazonica',
+    189.00,
+    'month',
+    'O equilíbrio perfeito de sabores e experiências em família',
+    'Nossa assinatura mais aclamada por sommeliers e famílias. Combina floradas raras e artefatos de colecionador.',
+    '["2 Frascos de Mel de Tiúba 150ml (edições combinadas: Amazonas + Bifloral)", "1 Edição Ilustrada + Encarte de atividades sem telas", "1 Brinde Nobre do Produtor (colher dosadora de madeira nobre)", "Ficha sensorial de harmonização com queijos e pratos", "Sem fidelidade: pause ou cancele quando quiser"]'::jsonb,
+    true,
+    true
+),
+(
+    'Guardião da Floresta',
+    'guardiao-da-floresta',
+    290.00,
+    'month',
+    'Alta Reserva, filantropia ecológica e privilégios exclusivos',
+    'A experiência máxima da meliponicultura amazônica com lotes numerados de tiragem ultralimitada e certificado nominado.',
+    '["3 Frascos de Mel (2 regulares + 1 lote numerado de safra ultralimitada)", "Certificado de Guardião da Colmeia com coordenadas geográficas GPS", "1 Edição da Revistinha Infantil + Minibrinde infantil colecionável", "1 Brinde de Luxo (cerâmica regional amazônica ou vela de cerume puro)", "15% de desconto vitalício em qualquer pedido avulso na Boutique", "Frete prioritário grátis"]'::jsonb,
+    false,
+    true
+)
+ON CONFLICT (slug) DO NOTHING;
+
+INSERT INTO public.subscription_boxes (cycle_month, cycle_year, title, description, bee_magazine_theme, artisan_gift_name) VALUES
+(
+    'Outubro',
+    '2026',
+    'Edição Outubro 2026 - Florada do Dossel Amazônico',
+    'Méis colhidos em floradas altas com notas florais adocicadas, acompanhado de historinha ecológica sobre a polinização das castanheiras.',
+    'O Segredo da Castanheira Sagrada',
+    'Colher Dosadora Artesanal em Madeira Nobre de Muirapiranga'
+)
+ON CONFLICT DO NOTHING;
+

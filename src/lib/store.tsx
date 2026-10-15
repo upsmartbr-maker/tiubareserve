@@ -1,10 +1,32 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product, CartItem, Order, Lot, SiteSettings, User, OrderStatus } from '@/types';
+import { 
+  Product, 
+  CartItem, 
+  Order, 
+  Lot, 
+  SiteSettings, 
+  User, 
+  OrderStatus,
+  SubscriptionPlan,
+  Subscription,
+  SubscriptionBox,
+  SubscriptionShipment,
+  ShipmentStatus,
+  SubscriptionStatus,
+  ShippingAddress
+} from '@/types';
 import { INITIAL_PRODUCTS } from '@/lib/data/products';
 import { INITIAL_LOTS } from '@/lib/data/lots';
 import { INITIAL_SETTINGS } from '@/lib/data/initialSettings';
+import { 
+  INITIAL_SUBSCRIPTION_PLANS, 
+  INITIAL_SUBSCRIPTION_BOX, 
+  DEMO_SUBSCRIPTIONS, 
+  DEMO_SHIPMENTS 
+} from '@/lib/data/subscriptionData';
+import { generatePixPayload } from '@/lib/pix';
 
 interface StoreContextType {
   // Products
@@ -28,6 +50,29 @@ interface StoreContextType {
   createOrder: (orderData: Omit<Order, 'id' | 'order_number' | 'created_at'>) => Order;
   updateOrderStatus: (orderId: string, status: OrderStatus, trackingCode?: string) => void;
   attachProofToOrder: (orderId: string, proofUrl: string) => void;
+
+  // Subscriptions & Club
+  subscriptionPlans: SubscriptionPlan[];
+  subscriptions: Subscription[];
+  currentBox: SubscriptionBox;
+  shipments: SubscriptionShipment[];
+  createSubscription: (data: {
+    plan_slug: string;
+    shipping_address: ShippingAddress;
+    payment_method: 'stripe' | 'pix';
+    user_name: string;
+    user_email: string;
+    user_phone: string;
+  }) => Subscription;
+  pauseSubscription: (subId: string) => void;
+  resumeSubscription: (subId: string) => void;
+  cancelSubscription: (subId: string) => void;
+  updateSubscriptionAddress: (subId: string, address: ShippingAddress) => void;
+  updateSubscriptionPaymentMethod: (subId: string, method: 'stripe' | 'pix') => void;
+  updateSubscriptionBox: (box: SubscriptionBox) => void;
+  updateShipmentStatus: (shipmentId: string, status: ShipmentStatus, trackingCode?: string) => void;
+  updateBulkShipmentTracking: (items: { id: string; tracking_code: string; status: ShipmentStatus }[]) => void;
+  getUserSubscription: (email?: string) => Subscription | undefined;
 
   // Lots & Traceability
   lots: Lot[];
@@ -61,6 +106,10 @@ const LOCAL_STORAGE_KEYS = {
   CART: 'tiuba_reserve_cart_v1',
   LANG: 'tiuba_reserve_lang_v1',
   USER: 'tiuba_reserve_user_v1',
+  SUBSCRIPTION_PLANS: 'tiuba_reserve_sub_plans_v1',
+  SUBSCRIPTIONS: 'tiuba_reserve_subs_v1',
+  CURRENT_BOX: 'tiuba_reserve_current_box_v1',
+  SHIPMENTS: 'tiuba_reserve_shipments_v1',
 };
 
 // Seed initial demo orders so admin dashboard is never empty
@@ -165,6 +214,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [settings, setSettings] = useState<SiteSettings>(INITIAL_SETTINGS);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [lang, setLangState] = useState<'pt' | 'en'>('pt');
+  const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>(INITIAL_SUBSCRIPTION_PLANS);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>(DEMO_SUBSCRIPTIONS);
+  const [currentBox, setCurrentBox] = useState<SubscriptionBox>(INITIAL_SUBSCRIPTION_BOX);
+  const [shipments, setShipments] = useState<SubscriptionShipment[]>(DEMO_SHIPMENTS);
   const [currentUser, setCurrentUser] = useState<User | null>({
     id: 'admin-001',
     email: 'admin@tiubareserve.com.br',
@@ -198,6 +251,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
       const savedUser = localStorage.getItem(LOCAL_STORAGE_KEYS.USER);
       if (savedUser) setCurrentUser(JSON.parse(savedUser));
+
+      const savedPlans = localStorage.getItem(LOCAL_STORAGE_KEYS.SUBSCRIPTION_PLANS);
+      if (savedPlans) setSubscriptionPlans(JSON.parse(savedPlans));
+
+      const savedSubs = localStorage.getItem(LOCAL_STORAGE_KEYS.SUBSCRIPTIONS);
+      if (savedSubs) setSubscriptions(JSON.parse(savedSubs));
+
+      const savedBox = localStorage.getItem(LOCAL_STORAGE_KEYS.CURRENT_BOX);
+      if (savedBox) setCurrentBox(JSON.parse(savedBox));
+
+      const savedShipments = localStorage.getItem(LOCAL_STORAGE_KEYS.SHIPMENTS);
+      if (savedShipments) setShipments(JSON.parse(savedShipments));
     } catch (e) {
       console.error('Error hydrating store from localStorage', e);
     }
@@ -374,6 +439,215 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  // Subscriptions & Club Actions
+  const createSubscription = ({
+    plan_slug,
+    shipping_address,
+    payment_method,
+    user_name,
+    user_email,
+    user_phone,
+  }: {
+    plan_slug: string;
+    shipping_address: ShippingAddress;
+    payment_method: 'stripe' | 'pix';
+    user_name: string;
+    user_email: string;
+    user_phone: string;
+  }): Subscription => {
+    const selectedPlan = subscriptionPlans.find(p => p.slug === plan_slug) || subscriptionPlans[1];
+    const now = new Date();
+    const periodEnd = new Date(now);
+    periodEnd.setDate(periodEnd.getDate() + 30);
+
+    const subId = `sub-${Date.now()}`;
+    let pixCode = undefined;
+
+    if (payment_method === 'pix') {
+      pixCode = generatePixPayload({
+        key: settings.pix_key || '48.912.430/0001-85',
+        receiverName: settings.pix_receiver_name || 'TIUBA RESERVE BRASIL LTDA',
+        city: settings.pix_city || 'SAO PAULO',
+        amount: selectedPlan.price,
+        txid: `SUB${Date.now().toString().slice(-8)}`,
+      });
+    }
+
+    const newSub: Subscription = {
+      id: subId,
+      user_id: currentUser?.id || `user-${Date.now()}`,
+      user_email: user_email || currentUser?.email || 'assinante@tiubareserve.com.br',
+      user_name: user_name || currentUser?.full_name || 'Assinante Tiúba',
+      user_phone: user_phone || currentUser?.phone || '(11) 99999-9999',
+      plan_id: selectedPlan.id,
+      plan_slug: selectedPlan.slug,
+      plan_name: selectedPlan.name,
+      plan_price: selectedPlan.price,
+      status: 'active',
+      payment_method,
+      stripe_subscription_id: payment_method === 'stripe' ? `sub_stripe_${Date.now()}` : undefined,
+      current_period_start: now.toISOString(),
+      current_period_end: periodEnd.toISOString(),
+      next_billing_date: periodEnd.toISOString(),
+      shipping_address,
+      pix_code: pixCode,
+      created_at: now.toISOString(),
+    };
+
+    // Auto-create first shipment for the current box
+    const newShipment: SubscriptionShipment = {
+      id: `ship-${Date.now()}`,
+      subscription_id: newSub.id,
+      box_id: currentBox.id,
+      subscriber_name: newSub.user_name,
+      subscriber_email: newSub.user_email,
+      subscriber_phone: newSub.user_phone,
+      plan_slug: newSub.plan_slug,
+      plan_name: newSub.plan_name,
+      shipping_address: newSub.shipping_address,
+      carrier: newSub.shipping_address.city.toLowerCase().includes('são paulo') ? 'Motoboy Especial SP' : 'Correios SEDEX Prioritário',
+      status: 'preparing',
+      created_at: now.toISOString(),
+    };
+
+    setSubscriptions(prev => {
+      const updated = [newSub, ...prev];
+      if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.SUBSCRIPTIONS, JSON.stringify(updated));
+      return updated;
+    });
+
+    setShipments(prev => {
+      const updated = [newShipment, ...prev];
+      if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.SHIPMENTS, JSON.stringify(updated));
+      return updated;
+    });
+
+    return newSub;
+  };
+
+  const pauseSubscription = (subId: string) => {
+    setSubscriptions(prev => {
+      const updated = prev.map(s => {
+        if (s.id === subId) {
+          const pauseDate = new Date();
+          pauseDate.setDate(pauseDate.getDate() + 30);
+          return {
+            ...s,
+            status: 'paused' as SubscriptionStatus,
+            paused_until: pauseDate.toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+        }
+        return s;
+      });
+      if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.SUBSCRIPTIONS, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const resumeSubscription = (subId: string) => {
+    setSubscriptions(prev => {
+      const updated = prev.map(s => {
+        if (s.id === subId) {
+          return {
+            ...s,
+            status: 'active' as SubscriptionStatus,
+            paused_until: undefined,
+            updated_at: new Date().toISOString(),
+          };
+        }
+        return s;
+      });
+      if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.SUBSCRIPTIONS, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const cancelSubscription = (subId: string) => {
+    setSubscriptions(prev => {
+      const updated = prev.map(s => {
+        if (s.id === subId) {
+          return {
+            ...s,
+            status: 'canceled' as SubscriptionStatus,
+            updated_at: new Date().toISOString(),
+          };
+        }
+        return s;
+      });
+      if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.SUBSCRIPTIONS, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const updateSubscriptionAddress = (subId: string, address: ShippingAddress) => {
+    setSubscriptions(prev => {
+      const updated = prev.map(s => (s.id === subId ? { ...s, shipping_address: address, updated_at: new Date().toISOString() } : s));
+      if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.SUBSCRIPTIONS, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const updateSubscriptionPaymentMethod = (subId: string, method: 'stripe' | 'pix') => {
+    setSubscriptions(prev => {
+      const updated = prev.map(s => (s.id === subId ? { ...s, payment_method: method, updated_at: new Date().toISOString() } : s));
+      if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.SUBSCRIPTIONS, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const updateSubscriptionBox = (box: SubscriptionBox) => {
+    setCurrentBox(box);
+    if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.CURRENT_BOX, JSON.stringify(box));
+  };
+
+  const updateShipmentStatus = (shipmentId: string, status: ShipmentStatus, trackingCode?: string) => {
+    setShipments(prev => {
+      const updated = prev.map(sh => {
+        if (sh.id === shipmentId) {
+          const isShipped = status === 'shipped';
+          const isDelivered = status === 'delivered';
+          return {
+            ...sh,
+            status,
+            tracking_code: trackingCode !== undefined ? trackingCode : sh.tracking_code,
+            shipped_at: isShipped ? (sh.shipped_at || new Date().toISOString()) : sh.shipped_at,
+            delivered_at: isDelivered ? (sh.delivered_at || new Date().toISOString()) : sh.delivered_at,
+          };
+        }
+        return sh;
+      });
+      if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.SHIPMENTS, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const updateBulkShipmentTracking = (items: { id: string; tracking_code: string; status: ShipmentStatus }[]) => {
+    setShipments(prev => {
+      const updated = prev.map(sh => {
+        const match = items.find(i => i.id === sh.id);
+        if (match) {
+          return {
+            ...sh,
+            status: match.status,
+            tracking_code: match.tracking_code || sh.tracking_code,
+            shipped_at: match.status === 'shipped' ? (sh.shipped_at || new Date().toISOString()) : sh.shipped_at,
+            delivered_at: match.status === 'delivered' ? (sh.delivered_at || new Date().toISOString()) : sh.delivered_at,
+          };
+        }
+        return sh;
+      });
+      if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.SHIPMENTS, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const getUserSubscription = (email?: string): Subscription | undefined => {
+    const targetEmail = email || currentUser?.email;
+    if (!targetEmail) return subscriptions[0];
+    return subscriptions.find(s => s.user_email.toLowerCase() === targetEmail.toLowerCase()) || subscriptions[0];
+  };
+
   // Settings
   const updateSettings = (newSettings: Partial<SiteSettings>) => {
     setSettings(prev => {
@@ -431,6 +705,20 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         createOrder,
         updateOrderStatus,
         attachProofToOrder,
+        subscriptionPlans,
+        subscriptions,
+        currentBox,
+        shipments,
+        createSubscription,
+        pauseSubscription,
+        resumeSubscription,
+        cancelSubscription,
+        updateSubscriptionAddress,
+        updateSubscriptionPaymentMethod,
+        updateSubscriptionBox,
+        updateShipmentStatus,
+        updateBulkShipmentTracking,
+        getUserSubscription,
         lots,
         getLotByCode,
         addLot,

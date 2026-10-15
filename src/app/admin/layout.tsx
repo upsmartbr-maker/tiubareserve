@@ -15,7 +15,8 @@ import {
   ShieldCheck, 
   LogOut,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  Crown
 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -23,7 +24,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { currentUser, isAdmin, settings, logout, t } = useStore();
 
   const menuItems = [
-    { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin', label: 'Dashboard Geral', icon: LayoutDashboard },
+    { href: '/admin/club', label: 'Clube de Assinatura', icon: Crown },
     { href: '/admin/pedidos', label: 'Gestor de Pedidos', icon: ShoppingBag },
     { href: '/admin/produtos', label: 'Gestor de Produtos', icon: Package },
     { href: '/admin/lotes', label: 'Gestor de Lotes & Laudos', icon: ShieldCheck },

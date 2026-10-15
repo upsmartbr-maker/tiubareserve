@@ -73,7 +73,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Navigation Links */}
-        <div className="hidden lg:flex items-center space-x-7">
+        <div className="hidden lg:flex items-center space-x-6">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -87,6 +87,18 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
+
+          {/* Exclusive Clube Tiúba CTA Pill Button */}
+          <Link
+            href="/clube"
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#dfb743] bg-gradient-to-r from-[#dfb743]/15 via-[#d97706]/10 to-[#dfb743]/15 text-[#dfb743] font-serif text-[11px] uppercase tracking-luxury font-bold shadow-[0_0_12px_rgba(223,183,67,0.15)] hover:shadow-[0_0_20px_rgba(223,183,67,0.35)] transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] ${
+              isActive('/clube') ? 'border-gold-300 ring-2 ring-gold-400/30 bg-[#dfb743]/25 text-gold-200' : ''
+            }`}
+            title="Conheça o Clube de Assinatura Tiúba"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-gold-400 animate-pulse" />
+            <span>✦ Clube Tiúba</span>
+          </Link>
         </div>
 
         {/* Action Controls: Lang, Admin, User, Cart */}
@@ -166,6 +178,26 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+
+            {/* Mobile Exclusive Clube Tiúba CTA Pill */}
+            <Link
+              href="/clube"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-full border border-[#dfb743] bg-gradient-to-r from-[#dfb743]/20 via-[#d97706]/15 to-[#dfb743]/20 text-gold-300 font-serif text-xs uppercase tracking-luxury font-bold shadow-[0_0_20px_rgba(223,183,67,0.25)] hover:shadow-[0_0_25px_rgba(223,183,67,0.4)] transition-all duration-300 mt-2 mb-2"
+            >
+              <Sparkles className="w-4 h-4 text-gold-400 animate-pulse" />
+              <span>✦ Clube Tiúba</span>
+            </Link>
+
+            <Link
+              href="/minha-conta/assinatura"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-xs uppercase tracking-luxury font-sans py-2 text-gold-400/80 hover:text-gold-300 flex items-center gap-2"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-gold-400" />
+              <span>Área do Assinante (/minha-conta/assinatura)</span>
+            </Link>
+
             <Link
               href="/admin"
               onClick={() => setMobileMenuOpen(false)}
