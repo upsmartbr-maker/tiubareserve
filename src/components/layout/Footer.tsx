@@ -97,17 +97,23 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/afiliados" className="text-gold-400/90 hover:text-gold-300 transition-colors flex items-center gap-1.5 font-medium">
+                <Link href="/afiliados" className="text-gold-400/90 hover:text-gold-300 transition-colors flex items-center gap-1.5 font-medium py-1">
                   <span>✦ Programa de Embaixadores & Afiliados</span>
                 </Link>
               </li>
-              <li>
-                <Link href="/admin/login" className="text-stone-500 hover:text-stone-400 text-[11px] transition-colors flex items-center gap-1.5 pt-2">
-                  <ShieldCheck className="w-3 h-3 text-stone-500" />
-                  <span>{t('Acesso Restrito', 'Restricted Access')}</span>
-                </Link>
-              </li>
             </ul>
+
+            {/* Acesso Restrito (Discreto e separado) */}
+            <div className="pt-4 border-t border-white/5">
+              <Link 
+                href="/admin/login" 
+                className="text-stone-600 hover:text-stone-400 text-xs transition-colors inline-flex items-center gap-1.5"
+                title="Área Administrativa"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-stone-600" />
+                <span>{t('Acesso Restrito', 'Restricted Access')}</span>
+              </Link>
+            </div>
           </div>
 
           {/* Column 3: Institutional & Legal Editable Data */}
@@ -115,20 +121,20 @@ export default function Footer() {
             <h4 className="font-serif text-sm tracking-luxury uppercase text-gold-300 font-semibold border-b border-gold-400/20 pb-2">
               {t('Atendimento & Localização', 'Customer Care & Address')}
             </h4>
-            <div className="space-y-2.5 text-xs text-stone-400 leading-relaxed font-sans">
-              <p className="flex items-start gap-2">
+            <div className="space-y-3 text-sm text-stone-300 leading-relaxed font-sans">
+              <p className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-gold-400 shrink-0 mt-0.5" />
                 <span>{settings.address}</span>
               </p>
-              <p className="flex items-center gap-2">
+              <p className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-gold-400 shrink-0" />
                 <span>{settings.phone}</span>
               </p>
-              <p className="flex items-center gap-2">
+              <p className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-gold-400 shrink-0" />
                 <span>contato@tiubareserve.com.br</span>
               </p>
-              <p className="pt-2 text-[11px] text-stone-400 font-mono">
+              <p className="pt-1 text-xs text-stone-400 font-mono">
                 CNPJ: {settings.cnpj}
               </p>
             </div>
@@ -139,7 +145,7 @@ export default function Footer() {
             <h4 className="font-serif text-sm tracking-luxury uppercase text-gold-300 font-semibold border-b border-gold-400/20 pb-2">
               {t('Conexão & Redes', 'Connect & Follow')}
             </h4>
-            <p className="text-xs text-stone-400 leading-relaxed">
+            <p className="text-sm text-stone-300 leading-relaxed">
               {t(
                 'Acompanhe as expedições amazônicas e o registro das floradas sazonais no nosso canal oficial.',
                 'Follow our Amazonian expeditions and documentation of seasonal blooms on our official channels.'
@@ -151,10 +157,10 @@ export default function Footer() {
                   href={settings.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-full bg-onyx-850 border border-gold-400/20 flex items-center justify-center text-gold-400 hover:border-gold-400 hover:scale-110 transition-all"
-                  aria-label="Instagram"
+                  className="w-11 h-11 min-h-[44px] min-w-[44px] rounded-full bg-onyx-850 border border-gold-400/30 flex items-center justify-center text-gold-400 hover:border-gold-400 hover:bg-gold-400/10 hover:scale-110 transition-all shadow-md"
+                  aria-label="Siga-nos no Instagram da Tiúba Reserve"
                 >
-                  <Instagram className="w-4 h-4" />
+                  <Instagram className="w-5 h-5" />
                 </a>
               )}
               {settings.facebook && (
@@ -162,10 +168,10 @@ export default function Footer() {
                   href={settings.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-full bg-onyx-850 border border-gold-400/20 flex items-center justify-center text-gold-400 hover:border-gold-400 hover:scale-110 transition-all"
-                  aria-label="Facebook"
+                  className="w-11 h-11 min-h-[44px] min-w-[44px] rounded-full bg-onyx-850 border border-gold-400/30 flex items-center justify-center text-gold-400 hover:border-gold-400 hover:bg-gold-400/10 hover:scale-110 transition-all shadow-md"
+                  aria-label="Curta nossa página no Facebook da Tiúba Reserve"
                 >
-                  <Facebook className="w-4 h-4" />
+                  <Facebook className="w-5 h-5" />
                 </a>
               )}
               {settings.whatsapp && (
@@ -173,20 +179,22 @@ export default function Footer() {
                   href={`https://wa.me/${settings.whatsapp.replace(/\D/g, '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-full bg-onyx-850 border border-gold-400/20 flex items-center justify-center text-gold-400 hover:border-gold-400 hover:scale-110 transition-all font-bold text-xs"
-                  aria-label="WhatsApp"
+                  className="w-11 h-11 min-h-[44px] min-w-[44px] rounded-full bg-onyx-850 border border-gold-400/30 flex items-center justify-center text-emerald-400 hover:border-emerald-400 hover:bg-emerald-500/15 hover:scale-110 transition-all shadow-md"
+                  aria-label="Converse conosco pelo WhatsApp do Sommelier Tiúba Reserve"
                 >
-                  WA
+                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z" />
+                  </svg>
                 </a>
               )}
             </div>
 
             {/* Sommelier Highlight Badge */}
-            <div className="p-3 rounded-lg bg-onyx-850 border border-gold-400/20 mt-3">
-              <span className="text-[10px] uppercase tracking-luxury text-gold-400 font-bold block mb-1">
+            <div className="p-3.5 rounded-xl bg-onyx-850 border border-gold-400/25 mt-3">
+              <span className="text-xs uppercase tracking-luxury text-gold-400 font-bold block mb-1">
                 {t('Sommelier Exclusivo', 'Exclusive Sommelier')}
               </span>
-              <p className="text-[11px] text-stone-400">
+              <p className="text-xs text-stone-300 leading-relaxed">
                 {t('Atendimento sob medida para enotecas e alta gastronomia.', 'Bespoke advisory for wine cellars and fine gastronomy.')}
               </p>
             </div>
@@ -194,26 +202,26 @@ export default function Footer() {
         </div>
 
         {/* Legal Policies and Copyright Bar */}
-        <div className="border-t border-gold-400/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-stone-400 font-sans">
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link href="/termos" className="hover:text-gold-400 transition-colors">
+        <div className="border-t border-gold-400/15 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-stone-300 font-sans">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+            <Link href="/termos" className="min-h-[44px] flex items-center hover:text-gold-400 transition-colors">
               {t('Termos e Condições', 'Terms & Conditions')}
             </Link>
-            <span>·</span>
-            <Link href="/privacidade" className="hover:text-gold-400 transition-colors">
+            <span className="text-stone-500">·</span>
+            <Link href="/privacidade" className="min-h-[44px] flex items-center hover:text-gold-400 transition-colors">
               {t('Política de Privacidade (LGPD)', 'Privacy Policy')}
             </Link>
-            <span>·</span>
-            <Link href="/cookies" className="hover:text-gold-400 transition-colors">
+            <span className="text-stone-500">·</span>
+            <Link href="/cookies" className="min-h-[44px] flex items-center hover:text-gold-400 transition-colors">
               {t('Política de Cookies', 'Cookies Policy')}
             </Link>
-            <span>·</span>
-            <Link href="/trocas" className="hover:text-gold-400 transition-colors">
+            <span className="text-stone-500">·</span>
+            <Link href="/trocas" className="min-h-[44px] flex items-center hover:text-gold-400 transition-colors">
               {t('Trocas e Devoluções', 'Returns & Exchanges')}
             </Link>
           </div>
 
-          <div className="text-center md:text-right text-stone-400">
+          <div className="text-center md:text-right text-stone-400 text-xs">
             <span>{settings.copyright}</span>
           </div>
         </div>

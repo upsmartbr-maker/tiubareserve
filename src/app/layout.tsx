@@ -23,6 +23,7 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://tiubareserve.com.br'),
   title: 'TIÚBA RESERVE · Mel Nobre de Abelha Tiúba (Melipona fasciculata)',
   description: 'Plataforma oficial TIÚBA RESERVE. Méis nobres e raros de abelha nativa sem ferrão Tiúba colhidos nas copas do Bioma Amazônia. Pureza botânica, rastreabilidade de lote e alta gastronomia.',
   keywords: [
@@ -37,6 +38,28 @@ export const metadata: Metadata = {
   icons: {
     icon: '/images/logo.png',
     apple: '/images/logo.png',
+  },
+  openGraph: {
+    title: 'TIÚBA RESERVE · Mel Nobre de Abelha Tiúba (Melipona fasciculata)',
+    description: 'Méis nobres e raros de abelha nativa sem ferrão Tiúba colhidos nas copas do Bioma Amazônia. Pureza botânica, rastreabilidade de lote e alta gastronomia.',
+    url: 'https://tiubareserve.com.br',
+    siteName: 'Tiúba Reserve',
+    locale: 'pt_BR',
+    type: 'website',
+    images: [
+      {
+        url: '/images/hero-bottle.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Frasco de Mel Nobre Tiúba Reserve 150ml',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'TIÚBA RESERVE · Mel Nobre de Abelha Tiúba',
+    description: 'Méis nobres e raros de abelha nativa sem ferrão Tiúba colhidos nas copas do Bioma Amazônia.',
+    images: ['/images/hero-bottle.jpg'],
   },
 };
 

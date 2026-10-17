@@ -50,6 +50,8 @@ export interface Product {
   nutritional_info: NutritionalInfo;
   active: boolean;
   featured?: boolean;
+  badge?: string;
+  badge_en?: string;
   bee_species: string;
   biome: string;
   floral_type: string;
