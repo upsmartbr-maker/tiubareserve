@@ -167,7 +167,7 @@ export default function ProductsPage() {
                             : 'border-gold-400/20 hover:border-gold-400/50 opacity-60 hover:opacity-100'
                         }`}
                       >
-                        <Image src={img} alt="" fill className="object-cover" />
+                        <Image src={img} alt={`${product.title} - Foto ${i + 1}`} fill className="object-cover" />
                       </button>
                     ))}
                   </div>

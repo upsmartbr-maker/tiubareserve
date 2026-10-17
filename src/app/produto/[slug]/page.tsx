@@ -165,7 +165,7 @@ export default function ProductDetailPage() {
                 >
                   <Image 
                     src={img || '/images/hero-bottle.jpg'} 
-                    alt="" 
+                    alt={`${product.name} - Miniatura ${idx + 1}`} 
                     fill 
                     unoptimized={Boolean(img?.startsWith('data:'))}
                     className="object-cover" 

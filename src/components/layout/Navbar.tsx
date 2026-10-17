@@ -78,7 +78,7 @@ export default function Navbar() {
         </Link>
 
         {/* 2. Centro: Links de Navegação com espaçamento uniforme */}
-        <div className="hidden lg:flex items-center gap-5 xl:gap-7 justify-center flex-1">
+        <div className="hidden xl:flex items-center gap-6 2xl:gap-8 justify-center flex-1">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -153,8 +153,10 @@ export default function Navbar() {
           {/* Mobile Hamburger Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 text-stone-300 hover:text-gold-400"
-            aria-label="Abrir Menu"
+            className="xl:hidden p-2 text-stone-300 hover:text-gold-400 focus-visible:ring-1 focus-visible:ring-gold-400 rounded-md transition-colors"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation-drawer"
+            aria-label={mobileMenuOpen ? "Fechar Menu de Navegação" : "Abrir Menu de Navegação"}
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -163,7 +165,7 @@ export default function Navbar() {
 
       {/* Mobile Drawer Navigation */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-onyx-900 border-b border-gold-400/20 px-6 pt-4 pb-8 space-y-4 animate-in slide-in-from-top-4 duration-200">
+        <div id="mobile-navigation-drawer" className="xl:hidden bg-onyx-900 border-b border-gold-400/20 px-6 pt-4 pb-8 space-y-4 animate-in slide-in-from-top-4 duration-200">
           <div className="flex flex-col space-y-3">
             {navLinks.map((link) => (
               <Link

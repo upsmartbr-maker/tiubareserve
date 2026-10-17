@@ -260,7 +260,7 @@ export default function AdminOrdersPage() {
                   <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-onyx-950 border border-white/5 text-xs">
                     <div className="flex items-center gap-3">
                       <div className="relative w-10 h-10 rounded-md overflow-hidden bg-onyx-900 shrink-0">
-                        <Image src={item.product.images[0] || '/images/hero-bottle.jpg'} alt="" fill className="object-cover" />
+                        <Image src={item.product.images[0] || '/images/hero-bottle.jpg'} alt={item.product.name} fill className="object-cover" />
                       </div>
                       <div>
                         <span className="font-semibold text-foreground block">{item.product.name}</span>

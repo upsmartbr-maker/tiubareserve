@@ -29,7 +29,7 @@ export default function CartDrawer() {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-labelledby="cart-drawer-heading">
       {/* Fundo escuro com desfoque */}
       <div
         onClick={closeCart}
@@ -37,21 +37,21 @@ export default function CartDrawer() {
       />
 
       {/* Painel Lateral */}
-      <div className="relative w-full max-w-md bg-[#0d0c0a] border-l border-[#332a1e] text-[#f4ecd8] h-full flex flex-col shadow-2xl z-10">
+      <div className="relative w-full max-w-md bg-onyx-950 border-l border-gold-400/25 text-[#f4ecd8] h-full flex flex-col shadow-2xl z-10">
         
         {/* Cabeçalho */}
-        <div className="p-6 border-b border-[#282117] flex items-center justify-between">
+        <div className="p-6 border-b border-gold-400/20 flex items-center justify-between">
           <div>
-            <span className="text-[11px] tracking-[0.25em] uppercase text-[#d6b26d] block font-semibold">
+            <span className="text-[11px] tracking-[0.25em] uppercase text-gold-400 block font-semibold font-mono">
               Boutique Tiúba Reserve
             </span>
-            <h2 className="text-xl font-serif tracking-wide text-[#fcf9f2] mt-1 font-medium">
+            <h2 id="cart-drawer-heading" className="text-xl font-serif tracking-wide text-foreground mt-1 font-semibold">
               Sua Seleção ({totalCount})
             </h2>
           </div>
           <button
             onClick={closeCart}
-            className="p-2 text-[#c2b6a3] hover:text-white transition-colors rounded-full hover:bg-white/10"
+            className="p-2 text-stone-300 hover:text-gold-300 transition-colors rounded-full hover:bg-white/10"
             aria-label="Fechar carrinho"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,18 +61,21 @@ export default function CartDrawer() {
         </div>
 
         {/* Lista de Produtos */}
-        <div className="flex-1 overflow-y-auto p-6 divide-y divide-[#221c13]">
+        <div className="flex-1 overflow-y-auto p-6 divide-y divide-gold-400/10">
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
-              <div className="w-16 h-16 rounded-full border border-[#443828] flex items-center justify-center text-[#d6b26d]">
+              <div className="w-16 h-16 rounded-full border border-gold-400/30 flex items-center justify-center text-gold-400">
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
               </div>
-              <p className="text-[#c8bdaf] text-sm">O seu frasco de safra exclusiva ainda não foi selecionado.</p>
+              <p className="text-stone-300 text-sm">O seu frasco de safra exclusiva ainda não foi selecionado.</p>
               <button
-                onClick={closeCart}
-                className="px-6 py-2.5 text-xs font-semibold tracking-wider uppercase border border-[#d6b26d]/60 text-[#d6b26d] hover:bg-[#d6b26d]/15 transition-colors"
+                onClick={() => {
+                  closeCart();
+                  router.push("/loja");
+                }}
+                className="px-6 py-2.5 text-xs font-semibold tracking-wider uppercase border border-gold-400 text-gold-400 hover:bg-gold-400/15 hover:shadow-[0_0_15px_rgba(223,183,67,0.3)] transition-all rounded-full"
               >
                 Explorar Colheita
               </button>
@@ -146,15 +149,15 @@ export default function CartDrawer() {
 
         {/* Rodapé e Finalização */}
         {items.length > 0 && (
-          <div className="p-6 border-t border-[#282117] bg-[#070605] space-y-4">
+          <div className="p-6 border-t border-gold-400/20 bg-onyx-900 space-y-4">
             <div className="space-y-2 text-xs">
-              <div className="flex justify-between text-[#c4b8a5]">
+              <div className="flex justify-between text-stone-300">
                 <span className="font-normal">Frete Especializado Climatizado</span>
-                <span className="text-[#48bb78] font-medium tracking-wide">Incluso (Cortesia)</span>
+                <span className="text-emerald-400 font-medium tracking-wide">Incluso (Cortesia)</span>
               </div>
-              <div className="flex justify-between items-baseline pt-2.5 border-t border-[#221c13]">
-                <span className="text-sm font-medium text-[#ded4c3]">Subtotal</span>
-                <span className="text-2xl font-serif font-bold text-[#e5be70]">
+              <div className="flex justify-between items-baseline pt-2.5 border-t border-gold-400/10">
+                <span className="text-sm font-medium text-stone-200">Subtotal</span>
+                <span className="text-2xl font-serif font-bold text-gold-300">
                   R$ {subtotal.toFixed(2).replace(".", ",")}
                 </span>
               </div>
@@ -165,13 +168,13 @@ export default function CartDrawer() {
                 closeCart();
                 router.push("/checkout");
               }}
-              className="w-full py-3.5 px-4 bg-gradient-to-r from-[#d4af37] via-[#c5a059] to-[#9e7d3b] hover:brightness-110 text-black font-semibold text-xs tracking-[0.16em] uppercase rounded transition-all shadow-lg shadow-[#c5a059]/15 active:scale-[0.99]"
+              className="w-full py-3.5 px-4 bg-gradient-to-r from-gold-400 via-amber-honey to-gold-500 hover:brightness-110 text-onyx-950 font-serif font-bold text-xs tracking-luxury uppercase rounded-full transition-all shadow-lg shadow-gold-400/15 hover:shadow-[0_0_20px_rgba(223,183,67,0.4)] active:scale-[0.99]"
             >
               Finalizar Pedido Exclusivo
             </button>
 
-            <div className="flex items-center justify-center gap-2 text-[11px] text-[#9e917d] pt-1">
-              <svg className="w-3.5 h-3.5 text-[#d6b26d] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <div className="flex items-center justify-center gap-2 text-[11px] text-stone-400 pt-1">
+              <svg className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 10-2 0v3a1 1 0 102 0V7z" clipRule="evenodd" />
               </svg>
               <span>Lacre Termofundido e Certificado de Lote Melissopalinológico</span>

@@ -1,6 +1,17 @@
 "use client";
 
 import React, { useState } from "react";
+import { 
+  Send, 
+  CheckCircle2, 
+  MessageSquare, 
+  MapPin, 
+  Phone, 
+  Mail, 
+  Sparkles,
+  ShieldCheck,
+  Clock
+} from "lucide-react";
 
 export default function ContatoSommelier() {
   const [formData, setFormData] = useState({
@@ -15,7 +26,7 @@ export default function ContatoSommelier() {
   const [enviado, setEnviado] = useState(false);
 
   // Número oficial de suporte/sommelier (DDI + DDD + Número)
-  const WHATSAPP_NUMBER = "551131978800"; // Substitua pelo número real da Tiúba Reserve
+  const WHATSAPP_NUMBER = "551131978800";
 
   const handleWhatsAppDirect = () => {
     const texto = encodeURIComponent(
@@ -29,7 +40,6 @@ export default function ContatoSommelier() {
     setLoading(true);
 
     try {
-      // Simulação ou chamada real à API (ex: /api/contact)
       await new Promise((resolve) => setTimeout(resolve, 1200));
       setEnviado(true);
       setFormData({
@@ -39,7 +49,7 @@ export default function ContatoSommelier() {
         assunto: "Dúvidas e Sugestões",
         mensagem: "",
       });
-    } catch (error) {
+    } catch {
       alert("Ocorreu um erro ao enviar. Por favor, tente pelo canal do WhatsApp.");
     } finally {
       setLoading(false);
@@ -47,43 +57,54 @@ export default function ContatoSommelier() {
   };
 
   return (
-    <section id="contato" className="py-20 bg-[#070605] text-[#f4ecd8] px-4">
-      <div className="max-w-6xl mx-auto space-y-12">
+    <section id="contato" className="py-20 sm:py-28 bg-onyx-950 text-foreground px-4 sm:px-6 lg:px-8 border-t border-gold-400/15">
+      <div className="max-w-6xl mx-auto space-y-12 sm:space-y-16">
+        
         {/* Cabeçalho */}
-        <div className="text-center space-y-2">
-          <span className="text-[11px] uppercase tracking-[0.25em] text-[#d6b26d] font-semibold bg-[#1a140d] px-3 py-1 rounded border border-[#3b2d18]">
-            Atendimento de Alto Padrão
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-serif text-[#fcf9f2] pt-2">
+        <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gold-400/10 border border-gold-400/30 text-gold-300 text-xs font-mono uppercase tracking-widest">
+            <Sparkles className="w-3.5 h-3.5 text-gold-400" />
+            <span>Atendimento de Alto Padrão</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-foreground tracking-tight">
             Contato & Sommelier
           </h2>
-          <p className="text-xs sm:text-sm text-[#a89a85] max-w-xl mx-auto">
+          <p className="text-xs sm:text-sm text-stone-300 max-w-xl mx-auto font-sans leading-relaxed">
             Estamos à disposição de sommeliers, chefs, colecionadores e parceiros comerciais de exportação. Escolha o canal de sua preferência.
           </p>
         </div>
 
-        {/* Grade de Contacto */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Grade de Contato */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
           
           {/* Formulário Oficial */}
-          <div className="lg:col-span-7 bg-[#0c0a08] border border-[#2b2216] rounded-lg p-6 sm:p-8">
-            <h3 className="text-lg font-serif text-[#fcf9f2] tracking-wide">
-              Envie uma Mensagem à Curadoria
-            </h3>
-            <p className="text-xs text-[#8e816f] mt-1 mb-6">
-              Retornamos em até 24 horas úteis com atenção exclusiva.
-            </p>
+          <div className="lg:col-span-7 bg-onyx-900 border border-gold-400/25 rounded-2xl p-6 sm:p-9 shadow-2xl relative overflow-hidden">
+            <div className="flex items-center justify-between border-b border-gold-400/15 pb-4 mb-6">
+              <div>
+                <h3 className="text-xl font-serif font-bold text-foreground tracking-wide">
+                  Envie uma Mensagem à Curadoria
+                </h3>
+                <div className="flex items-center gap-1.5 text-xs text-stone-400 mt-1">
+                  <Clock className="w-3.5 h-3.5 text-gold-400" />
+                  <span>Retornamos em até 24 horas úteis com atenção exclusiva</span>
+                </div>
+              </div>
+            </div>
 
             {enviado ? (
-              <div className="p-6 bg-[#162219] border border-[#234d34] rounded text-center space-y-3">
-                <span className="text-2xl">🌿</span>
-                <h4 className="text-base font-serif text-[#48bb78]">Mensagem Entregue com Sucesso</h4>
-                <p className="text-xs text-[#ded4c3]">
-                  A nossa curadoria gastronómica entrará em contacto através do e-mail ou WhatsApp fornecido.
+              <div className="p-8 bg-forest-deep/60 border border-emerald-500/30 rounded-xl text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <h4 className="text-lg font-serif font-bold text-emerald-300">
+                  Mensagem Entregue com Sucesso
+                </h4>
+                <p className="text-xs sm:text-sm text-stone-300 leading-relaxed max-w-md mx-auto">
+                  A nossa curadoria gastronômica entrará em contato através do e-mail ou WhatsApp fornecido.
                 </p>
                 <button
                   onClick={() => setEnviado(false)}
-                  className="text-xs text-[#d6b26d] underline pt-2 block mx-auto"
+                  className="text-xs font-mono uppercase tracking-wider text-gold-400 hover:text-gold-300 underline pt-2 block mx-auto transition-colors"
                 >
                   Enviar outra mensagem
                 </button>
@@ -92,7 +113,7 @@ export default function ContatoSommelier() {
               <form onSubmit={handleSubmitForm} className="space-y-4 text-xs">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[#a89a85] uppercase tracking-wider mb-1.5 font-medium">
+                    <label className="block text-stone-300 uppercase tracking-wider mb-1.5 font-sans font-medium text-[11px]">
                       Seu Nome Completo *
                     </label>
                     <input
@@ -101,12 +122,12 @@ export default function ContatoSommelier() {
                       placeholder="Ex.: Carlos Eduardo Meirelles"
                       value={formData.nome}
                       onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                      className="w-full bg-[#14100b] border border-[#332819] rounded p-3 text-[#fcf9f2] placeholder-[#5f5445] focus:border-[#d6b26d] outline-none"
+                      className="w-full bg-onyx-950 border border-gold-400/20 rounded-lg p-3 text-foreground placeholder:text-stone-500 focus:border-gold-400 focus-visible:ring-1 focus-visible:ring-gold-400 outline-none transition-all font-sans"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[#a89a85] uppercase tracking-wider mb-1.5 font-medium">
+                    <label className="block text-stone-300 uppercase tracking-wider mb-1.5 font-sans font-medium text-[11px]">
                       E-mail Corporativo ou Pessoal *
                     </label>
                     <input
@@ -115,14 +136,14 @@ export default function ContatoSommelier() {
                       placeholder="carlos@exemplo.com.br"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full bg-[#14100b] border border-[#332819] rounded p-3 text-[#fcf9f2] placeholder-[#5f5445] focus:border-[#d6b26d] outline-none"
+                      className="w-full bg-onyx-950 border border-gold-400/20 rounded-lg p-3 text-foreground placeholder:text-stone-500 focus:border-gold-400 focus-visible:ring-1 focus-visible:ring-gold-400 outline-none transition-all font-sans"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[#a89a85] uppercase tracking-wider mb-1.5 font-medium">
+                    <label className="block text-stone-300 uppercase tracking-wider mb-1.5 font-sans font-medium text-[11px]">
                       Telefone / WhatsApp *
                     </label>
                     <input
@@ -131,18 +152,18 @@ export default function ContatoSommelier() {
                       placeholder="(11) 98765-4321"
                       value={formData.telefone}
                       onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
-                      className="w-full bg-[#14100b] border border-[#332819] rounded p-3 text-[#fcf9f2] placeholder-[#5f5445] focus:border-[#d6b26d] outline-none"
+                      className="w-full bg-onyx-950 border border-gold-400/20 rounded-lg p-3 text-foreground placeholder:text-stone-500 focus:border-gold-400 focus-visible:ring-1 focus-visible:ring-gold-400 outline-none transition-all font-sans"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[#a89a85] uppercase tracking-wider mb-1.5 font-medium">
+                    <label className="block text-stone-300 uppercase tracking-wider mb-1.5 font-sans font-medium text-[11px]">
                       Assunto Principal *
                     </label>
                     <select
                       value={formData.assunto}
                       onChange={(e) => setFormData({ ...formData, assunto: e.target.value })}
-                      className="w-full bg-[#14100b] border border-[#332819] rounded p-3 text-[#fcf9f2] focus:border-[#d6b26d] outline-none"
+                      className="w-full bg-onyx-950 border border-gold-400/20 rounded-lg p-3 text-foreground focus:border-gold-400 focus-visible:ring-1 focus-visible:ring-gold-400 outline-none transition-all font-sans"
                     >
                       <option value="Dúvidas e Sugestões">Dúvidas e Sugestões</option>
                       <option value="Consultoria com Sommelier">Consultoria com Sommelier</option>
@@ -153,7 +174,7 @@ export default function ContatoSommelier() {
                 </div>
 
                 <div>
-                  <label className="block text-[#a89a85] uppercase tracking-wider mb-1.5 font-medium">
+                  <label className="block text-stone-300 uppercase tracking-wider mb-1.5 font-sans font-medium text-[11px]">
                     Sua Mensagem *
                   </label>
                   <textarea
@@ -162,16 +183,17 @@ export default function ContatoSommelier() {
                     placeholder="Descreva como podemos atendê-lo com excelência..."
                     value={formData.mensagem}
                     onChange={(e) => setFormData({ ...formData, mensagem: e.target.value })}
-                    className="w-full bg-[#14100b] border border-[#332819] rounded p-3 text-[#fcf9f2] placeholder-[#5f5445] focus:border-[#d6b26d] outline-none resize-none"
+                    className="w-full bg-onyx-950 border border-gold-400/20 rounded-lg p-3 text-foreground placeholder:text-stone-500 focus:border-gold-400 focus-visible:ring-1 focus-visible:ring-gold-400 outline-none resize-none transition-all font-sans"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 bg-gradient-to-r from-[#d4af37] via-[#c5a059] to-[#a38038] hover:brightness-110 text-black font-semibold uppercase tracking-[0.15em] rounded transition-all shadow-lg flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-gradient-to-r from-gold-400 via-amber-honey to-gold-500 hover:brightness-110 text-onyx-950 font-serif font-bold uppercase tracking-luxury text-xs rounded-full transition-all shadow-lg shadow-gold-400/20 hover:shadow-[0_0_20px_rgba(223,183,67,0.4)] flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {loading ? "A enviar..." : "✈ Enviar Mensagem Oficial"}
+                  <Send className="w-4 h-4 shrink-0" />
+                  <span>{loading ? "A enviar..." : "Enviar Mensagem Oficial"}</span>
                 </button>
               </form>
             )}
@@ -181,61 +203,61 @@ export default function ContatoSommelier() {
           <div className="lg:col-span-5 space-y-6">
             
             {/* Canal WhatsApp Sommelier */}
-            <div className="bg-[#0c0a08] border border-[#2b2216] rounded-lg p-6 space-y-4">
-              <div className="flex items-center gap-2 text-[#48bb78]">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z" />
-                </svg>
-                <span className="text-xs uppercase tracking-wider font-semibold text-[#fcf9f2]">
+            <div className="bg-onyx-900 border border-emerald-500/30 rounded-2xl p-6 sm:p-7 space-y-4 shadow-xl">
+              <div className="flex items-center gap-2 text-emerald-400">
+                <MessageSquare className="w-5 h-5 shrink-0" />
+                <span className="text-xs uppercase tracking-wider font-mono font-bold text-emerald-300">
                   Canal Sommelier WhatsApp
                 </span>
               </div>
               
-              <p className="text-xs text-[#a89a85] leading-relaxed">
-                Prefere conversar em tempo real? O nosso sommelier especializado está pronto para esclarecer dúvidas sobre floradas, harmonizações gastronómicas e lotes especiais numerados.
+              <p className="text-xs text-stone-300 font-sans leading-relaxed">
+                Prefere conversar em tempo real? O nosso sommelier especializado está pronto para esclarecer dúvidas sobre floradas, harmonizações gastronômicas e lotes especiais numerados.
               </p>
 
               <button
                 onClick={handleWhatsAppDirect}
-                className="w-full py-3.5 bg-[#1ebd5e] hover:bg-[#18a852] text-black font-semibold text-xs tracking-wider uppercase rounded flex items-center justify-center gap-2 transition-all shadow-md"
+                className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-sans font-bold text-xs tracking-wider uppercase rounded-full flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-950/40 hover:scale-[1.02] active:scale-[0.98]"
               >
-                <span>💬</span> Iniciar Conversa no WhatsApp
+                <MessageSquare className="w-4 h-4" />
+                <span>Iniciar Conversa no WhatsApp</span>
               </button>
             </div>
 
             {/* Sede Institucional & Dados */}
-            <div className="bg-[#0c0a08] border border-[#2b2216] rounded-lg p-6 space-y-4 text-xs text-[#c4b8a5]">
-              <h4 className="font-serif text-sm text-[#fcf9f2] tracking-wide uppercase">
-                Sede Institucional & Dados
+            <div className="bg-onyx-900 border border-gold-400/20 rounded-2xl p-6 sm:p-7 space-y-4 text-xs text-stone-300 shadow-xl">
+              <h4 className="font-serif text-sm text-foreground tracking-wide uppercase font-bold flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-gold-400" />
+                <span>Sede Institucional & Dados</span>
               </h4>
               
-              <div className="space-y-3 pt-2">
-                <div className="flex items-start gap-2.5">
-                  <span className="text-[#d6b26d]">📍</span>
+              <div className="space-y-3 pt-1">
+                <div className="flex items-start gap-3">
+                  <MapPin className="w-4 h-4 text-gold-400 shrink-0 mt-0.5" />
                   <div>
-                    <span className="text-[#8e816f] block uppercase tracking-wider text-[10px]">Endereço Corporativo</span>
-                    <p>Av. Brigadeiro Faria Lima, 3477 - 14º Andar, Itaim Bibi, São Paulo - SP</p>
+                    <span className="text-stone-400 block uppercase tracking-wider text-[10px] font-mono">Endereço Corporativo</span>
+                    <p className="text-stone-200 mt-0.5">Av. Brigadeiro Faria Lima, 3477 - 14º Andar, Itaim Bibi, São Paulo - SP</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2.5">
-                  <span className="text-[#d6b26d]">📞</span>
+                <div className="flex items-start gap-3">
+                  <Phone className="w-4 h-4 text-gold-400 shrink-0 mt-0.5" />
                   <div>
-                    <span className="text-[#8e816f] block uppercase tracking-wider text-[10px]">Telefones Oficiais</span>
-                    <p>+55 (11) 3197-8800 / WhatsApp Comercial</p>
+                    <span className="text-stone-400 block uppercase tracking-wider text-[10px] font-mono">Telefones Oficiais</span>
+                    <p className="text-stone-200 mt-0.5">+55 (11) 3197-8800 / WhatsApp Comercial</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2.5">
-                  <span className="text-[#d6b26d]">✉</span>
+                <div className="flex items-start gap-3">
+                  <Mail className="w-4 h-4 text-gold-400 shrink-0 mt-0.5" />
                   <div>
-                    <span className="text-[#8e816f] block uppercase tracking-wider text-[10px]">E-mail Geral</span>
-                    <p>contato@tiubareserve.com.br</p>
+                    <span className="text-stone-400 block uppercase tracking-wider text-[10px] font-mono">E-mail Geral</span>
+                    <p className="text-stone-200 mt-0.5">contato@tiubareserve.com.br</p>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-[#1c160f] text-[10px] text-[#7a6f5e]">
+              <div className="pt-3 border-t border-gold-400/10 text-[11px] font-mono text-stone-400">
                 CNPJ: 48.912.430/0001-85
               </div>
             </div>
