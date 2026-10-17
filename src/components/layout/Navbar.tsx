@@ -30,14 +30,15 @@ export default function Navbar() {
     { href: '/', label: t('Home', 'Home') },
     { href: '/produtos', label: t('Nossos Produtos', 'Our Products') },
     { href: '/loja', label: t('Boutique do Mel', 'Honey Boutique') },
-    { href: '/rastreio', label: t('Rastreio de Lote', 'Batch Traceability') },
-    { href: '/contato', label: t('Contato & Sommelier', 'Contact & Sommelier') },
+    { href: '/rastreio', label: t('Rastreio', 'Traceability') },
+    { href: '/afiliados', label: t('Revenda & Afiliados', 'Resell & Affiliates') },
+    { href: '/contato', label: t('Contato', 'Contact') },
   ];
 
   const isActive = (path: string) => pathname === path;
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#090c0a]/90 backdrop-blur-md border-b border-[#dfb743]/20 transition-all duration-300">
+    <header className="sticky top-0 z-50 w-full bg-[#090c0a]/90 backdrop-blur-md border-b border-[#dfb743]/30 shadow-[0_4px_20px_rgba(0,0,0,0.5)] transition-all duration-300">
       {/* Top micro-bar for luxury origin announcement */}
       <div className="w-full bg-forest-dark border-b border-gold-400/10 py-1.5 px-4 text-center text-[11px] font-sans tracking-luxury uppercase text-gold-300/80 flex items-center justify-center gap-2">
         <Sparkles className="w-3 h-3 text-gold-400 animate-pulse" />
@@ -50,9 +51,10 @@ export default function Navbar() {
         <Sparkles className="w-3 h-3 text-gold-400 animate-pulse" />
       </div>
 
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-24 flex items-center justify-between">
-        {/* Brand Official Logo */}
-        <Link href="/" className="flex items-center gap-3.5 group py-1">
+      <nav className="max-w-7xl mx-auto px-6 md:px-10 h-20 sm:h-24 flex items-center justify-between">
+        
+        {/* 1. Lado Esquerdo: Bloco do Logotipo com margem de respiro */}
+        <Link href="/" className="flex items-center gap-3.5 group py-1 mr-8 xl:mr-12 shrink-0">
           <div 
             className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border border-[#dfb743]/50 p-0.5 bg-onyx-950 group-hover:border-[#dfb743] transition-all shrink-0"
             style={{ filter: 'drop-shadow(0 0 10px rgba(223, 183, 67, 0.35))' }}
@@ -75,13 +77,13 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* Desktop Navigation Links */}
-        <div className="hidden lg:flex items-center space-x-6">
+        {/* 2. Centro: Links de Navegação com espaçamento uniforme */}
+        <div className="hidden lg:flex items-center gap-5 xl:gap-7 justify-center flex-1">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`text-xs uppercase tracking-luxury font-sans transition-all py-1 border-b-2 ${
+              className={`text-xs uppercase tracking-luxury font-sans whitespace-nowrap transition-all py-1 border-b-2 ${
                 isActive(link.href)
                   ? 'text-gold-400 border-gold-400 font-semibold'
                   : 'text-stone-300 hover:text-gold-300 border-transparent hover:border-gold-400/40'
@@ -90,25 +92,26 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
+        </div>
 
+        {/* 3. Lado Direito: Ações (Botão Clube Tiúba, Idioma, Login, Carrinho) */}
+        <div className="flex items-center gap-3 sm:gap-4 shrink-0 ml-4 xl:ml-8">
+          
           {/* Exclusive Clube Tiúba CTA Pill Button */}
           <Link
             href="/clube"
-            className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-[#dfb743] bg-gradient-to-r from-[#dfb743]/15 via-[#d97706]/10 to-[#dfb743]/15 text-[#dfb743] hover:text-[#fef08a] hover:shadow-[0_0_15px_rgba(223,183,67,0.35)] transition-all duration-300 whitespace-nowrap text-xs font-semibold tracking-wider uppercase ${
+            className={`hidden sm:inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-full border border-[#dfb743] bg-gradient-to-r from-[#dfb743]/15 via-[#d97706]/10 to-[#dfb743]/15 text-[#dfb743] hover:text-[#fef08a] hover:shadow-[0_0_15px_rgba(223,183,67,0.35)] transition-all duration-300 whitespace-nowrap text-xs font-semibold tracking-wider uppercase ${
               isActive('/clube') ? 'ring-2 ring-gold-400/40 bg-[#dfb743]/25 text-[#fef08a]' : ''
             }`}
             title="Conheça o Clube de Assinatura Tiúba"
           >
             {/* Deixe apenas UM ícone sutil à esquerda */}
-            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24">
               <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"/>
             </svg>
             <span>Clube Tiúba</span>
           </Link>
-        </div>
 
-        {/* Action Controls: Lang, Admin, User, Cart */}
-        <div className="flex items-center space-x-4">
           {/* Language Switcher */}
           <button
             onClick={() => setLang(lang === 'pt' ? 'en' : 'pt')}
