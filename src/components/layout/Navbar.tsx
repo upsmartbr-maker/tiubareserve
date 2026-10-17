@@ -37,7 +37,7 @@ export default function Navbar() {
   const isActive = (path: string) => pathname === path;
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-onyx-950/90 backdrop-blur-md border-b border-gold-400/20 transition-all duration-300">
+    <header className="sticky top-0 z-50 w-full bg-[#090c0a]/90 backdrop-blur-md border-b border-[#dfb743]/20 transition-all duration-300">
       {/* Top micro-bar for luxury origin announcement */}
       <div className="w-full bg-forest-dark border-b border-gold-400/10 py-1.5 px-4 text-center text-[11px] font-sans tracking-luxury uppercase text-gold-300/80 flex items-center justify-center gap-2">
         <Sparkles className="w-3 h-3 text-gold-400 animate-pulse" />
@@ -50,12 +50,15 @@ export default function Navbar() {
         <Sparkles className="w-3 h-3 text-gold-400 animate-pulse" />
       </div>
 
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 sm:h-24 flex items-center justify-between">
         {/* Brand Official Logo */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative w-12 h-12 rounded-full overflow-hidden border border-gold-400/30 p-0.5 bg-onyx-900 group-hover:border-gold-400 transition-colors">
+        <Link href="/" className="flex items-center gap-3.5 group py-1">
+          <div 
+            className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border border-[#dfb743]/50 p-0.5 bg-onyx-950 group-hover:border-[#dfb743] transition-all shrink-0"
+            style={{ filter: 'drop-shadow(0 0 10px rgba(223, 183, 67, 0.35))' }}
+          >
             <Image
-              src={settings.logo_url || '/images/logo.png'}
+              src={settings.logo_url || '/images/logo.jpg'}
               alt="TIÚBA RESERVE Logo"
               fill
               className="object-cover rounded-full"
@@ -63,11 +66,11 @@ export default function Navbar() {
             />
           </div>
           <div className="flex flex-col">
-            <span className="font-serif tracking-monumental text-base sm:text-lg font-bold text-foreground group-hover:text-gold-300 transition-colors">
+            <span className="font-serif text-lg sm:text-xl font-bold text-[#dfb743] tracking-[0.2em] group-hover:text-[#fef08a] transition-colors whitespace-nowrap">
               TIÚBA RESERVE
             </span>
-            <span className="text-[9px] font-sans tracking-widest text-gold-400 uppercase -mt-0.5">
-              Melipona Fasciculata · Amazonia
+            <span className="text-[9px] sm:text-[10px] font-sans text-slate-400 tracking-[0.25em] uppercase -mt-0.5 whitespace-nowrap">
+              AMAZONIAN NATIVE HONEY
             </span>
           </div>
         </Link>
