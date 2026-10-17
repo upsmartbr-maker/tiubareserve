@@ -97,6 +97,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/afiliados" className="text-gold-400/90 hover:text-gold-300 transition-colors flex items-center gap-1.5 font-medium">
+                  <span>✦ Programa de Embaixadores & Afiliados</span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/admin/login" className="text-stone-500 hover:text-stone-400 text-[11px] transition-colors flex items-center gap-1.5 pt-2">
                   <ShieldCheck className="w-3 h-3 text-stone-500" />
                   <span>{t('Acesso Restrito', 'Restricted Access')}</span>

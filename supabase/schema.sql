@@ -320,3 +320,89 @@ INSERT INTO public.subscription_boxes (cycle_month, cycle_year, title, descripti
 )
 ON CONFLICT DO NOTHING;
 
+-- ========================================================
+-- 7. PROGRAMA DE AFILIADOS / EMBAIXADORES & COMISSÕES
+-- ========================================================
+
+-- 7.1 AFFILIATES TABLE
+CREATE TABLE IF NOT EXISTS public.affiliates (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    code VARCHAR(10) UNIQUE NOT NULL,
+    commission_rate NUMERIC(5, 2) DEFAULT 10.00 NOT NULL,
+    discount_rate NUMERIC(5, 2) DEFAULT 5.00 NOT NULL,
+    pix_key TEXT,
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'suspended')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    CONSTRAINT affiliate_code_format CHECK (code ~ '^[A-Z0-9]{2,10}$')
+);
+
+-- Extend Orders table with affiliate tracking columns
+ALTER TABLE public.orders 
+ADD COLUMN IF NOT EXISTS affiliate_id UUID REFERENCES public.affiliates(id) ON DELETE SET NULL,
+ADD COLUMN IF NOT EXISTS affiliate_code VARCHAR(10),
+ADD COLUMN IF NOT EXISTS discount_amount NUMERIC(10, 2) DEFAULT 0.00;
+
+-- 7.2 AFFILIATE SALES (VENDAS ANONIMIZADAS - LGPD COMPLIANT)
+CREATE TABLE IF NOT EXISTS public.affiliate_sales (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    affiliate_id UUID NOT NULL REFERENCES public.affiliates(id) ON DELETE CASCADE,
+    order_id UUID REFERENCES public.orders(id) ON DELETE SET NULL,
+    items_summary JSONB NOT NULL DEFAULT '[]'::jsonb,
+    gross_amount NUMERIC(10, 2) NOT NULL,
+    discount_amount NUMERIC(10, 2) DEFAULT 0.00 NOT NULL,
+    net_amount NUMERIC(10, 2) NOT NULL,
+    commission_amount NUMERIC(10, 2) NOT NULL,
+    shipping_state VARCHAR(2) NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'paid', 'canceled')),
+    paid_at TIMESTAMP WITH TIME ZONE,
+    payment_proof_note TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ========================================================
+-- RLS POLICIES FOR AFFILIATES MODULE
+-- ========================================================
+
+ALTER TABLE public.affiliates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.affiliate_sales ENABLE ROW LEVEL SECURITY;
+
+-- Affiliates Policies
+CREATE POLICY "Public read active affiliate codes" ON public.affiliates
+    FOR SELECT USING (status = 'active' OR auth.role() = 'service_role');
+
+CREATE POLICY "Affiliates read own profile" ON public.affiliates
+    FOR SELECT USING (user_id = auth.uid() OR auth.jwt() ->> 'role' = 'admin' OR auth.role() = 'service_role');
+
+CREATE POLICY "Affiliates update own pix" ON public.affiliates
+    FOR UPDATE USING (user_id = auth.uid() OR auth.jwt() ->> 'role' = 'admin' OR auth.role() = 'service_role');
+
+CREATE POLICY "Admin manage affiliates" ON public.affiliates
+    FOR ALL USING (auth.jwt() ->> 'role' = 'admin' OR auth.role() = 'service_role');
+
+-- Affiliate Sales Policies (LGPD: Affiliates can only see their sales summary, never customer PII)
+CREATE POLICY "Affiliates read own sales" ON public.affiliate_sales
+    FOR SELECT USING (
+        affiliate_id IN (SELECT id FROM public.affiliates WHERE user_id = auth.uid()) 
+        OR auth.jwt() ->> 'role' = 'admin' 
+        OR auth.role() = 'service_role'
+    );
+
+CREATE POLICY "Admin manage affiliate sales" ON public.affiliate_sales
+    FOR ALL USING (auth.jwt() ->> 'role' = 'admin' OR auth.role() = 'service_role');
+
+-- ========================================================
+-- SEED DATA FOR DEMO AFFILIATES
+-- ========================================================
+
+INSERT INTO public.affiliates (name, email, code, commission_rate, discount_rate, pix_key, status) VALUES
+('Chef Ana Gastronomia', 'chef.ana@altareserva.com.br', 'CHEFANA', 10.00, 5.00, 'chef.ana@altareserva.com.br', 'active'),
+('Tiúba Oficial Ambassador', 'embaixador@tiubareserve.com.br', 'TIUBA10', 10.00, 5.00, '48.912.430/0001-85', 'active'),
+('Sommelier Silva', 'marcelo.couto@sommelier.com', 'SOMMELIER', 12.00, 8.00, '11991235566', 'active'),
+('Clube Gourmet SP', 'contato@gourmetsp.com.br', 'GOURMET', 10.00, 5.00, 'pix@gourmetsp.com.br', 'pending')
+ON CONFLICT (code) DO NOTHING;
+
+

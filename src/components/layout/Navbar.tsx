@@ -91,13 +91,16 @@ export default function Navbar() {
           {/* Exclusive Clube Tiúba CTA Pill Button */}
           <Link
             href="/clube"
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#dfb743] bg-gradient-to-r from-[#dfb743]/15 via-[#d97706]/10 to-[#dfb743]/15 text-[#dfb743] font-serif text-[11px] uppercase tracking-luxury font-bold shadow-[0_0_12px_rgba(223,183,67,0.15)] hover:shadow-[0_0_20px_rgba(223,183,67,0.35)] transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] ${
-              isActive('/clube') ? 'border-gold-300 ring-2 ring-gold-400/30 bg-[#dfb743]/25 text-gold-200' : ''
+            className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-[#dfb743] bg-gradient-to-r from-[#dfb743]/15 via-[#d97706]/10 to-[#dfb743]/15 text-[#dfb743] hover:text-[#fef08a] hover:shadow-[0_0_15px_rgba(223,183,67,0.35)] transition-all duration-300 whitespace-nowrap text-xs font-semibold tracking-wider uppercase ${
+              isActive('/clube') ? 'ring-2 ring-gold-400/40 bg-[#dfb743]/25 text-[#fef08a]' : ''
             }`}
             title="Conheça o Clube de Assinatura Tiúba"
           >
-            <Sparkles className="w-3.5 h-3.5 text-gold-400 animate-pulse" />
-            <span>✦ Clube Tiúba</span>
+            {/* Deixe apenas UM ícone sutil à esquerda */}
+            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+              <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"/>
+            </svg>
+            <span>Clube Tiúba</span>
           </Link>
         </div>
 
@@ -173,10 +176,13 @@ export default function Navbar() {
             <Link
               href="/clube"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-full border border-[#dfb743] bg-gradient-to-r from-[#dfb743]/20 via-[#d97706]/15 to-[#dfb743]/20 text-gold-300 font-serif text-xs uppercase tracking-luxury font-bold shadow-[0_0_20px_rgba(223,183,67,0.25)] hover:shadow-[0_0_25px_rgba(223,183,67,0.4)] transition-all duration-300 mt-2 mb-2"
+              className="inline-flex items-center justify-center gap-2 w-full px-4 py-3 rounded-full border border-[#dfb743] bg-gradient-to-r from-[#dfb743]/15 via-[#d97706]/10 to-[#dfb743]/15 text-[#dfb743] hover:text-[#fef08a] hover:shadow-[0_0_15px_rgba(223,183,67,0.35)] transition-all duration-300 whitespace-nowrap text-xs font-semibold tracking-wider uppercase mt-2 mb-2"
             >
-              <Sparkles className="w-4 h-4 text-gold-400 animate-pulse" />
-              <span>✦ Clube Tiúba</span>
+              {/* Deixe apenas UM ícone sutil à esquerda */}
+              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"/>
+              </svg>
+              <span>Clube Tiúba</span>
             </Link>
 
             <Link

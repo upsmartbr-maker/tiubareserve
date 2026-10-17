@@ -112,6 +112,9 @@ export interface Order {
   proof_url?: string;
   pix_code?: string;
   pix_qr_url?: string;
+  affiliate_id?: string;
+  affiliate_code?: string;
+  discount_amount?: number;
   created_at: string;
   updated_at?: string;
 }
@@ -250,6 +253,46 @@ export interface SubscriptionShipment {
   status: ShipmentStatus;
   shipped_at?: string;
   delivered_at?: string;
+  created_at: string;
+}
+
+export type AffiliateStatus = 'pending' | 'active' | 'suspended';
+export type AffiliateSaleStatus = 'pending' | 'approved' | 'paid' | 'canceled';
+
+export interface Affiliate {
+  id: string;
+  user_id?: string;
+  name: string;
+  email?: string;
+  code: string;
+  commission_rate: number;
+  discount_rate: number;
+  pix_key?: string;
+  status: AffiliateStatus;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface AffiliateSaleItem {
+  name: string;
+  quantity: number;
+  unit_price: number;
+}
+
+export interface AffiliateSale {
+  id: string;
+  affiliate_id: string;
+  affiliate_code?: string;
+  order_id?: string;
+  items_summary: AffiliateSaleItem[];
+  gross_amount: number;
+  discount_amount: number;
+  net_amount: number;
+  commission_amount: number;
+  shipping_state: string; // Ex: "SP", "RJ", "AM"
+  status: AffiliateSaleStatus;
+  paid_at?: string;
+  payment_proof_note?: string;
   created_at: string;
 }
 

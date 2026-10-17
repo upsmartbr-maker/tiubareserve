@@ -18,10 +18,13 @@ import {
   ArrowLeft, 
   ExternalLink,
   Sparkles,
-  ShoppingBag
+  ShoppingBag,
+  Tag,
+  Gift,
+  X
 } from 'lucide-react';
 import { generatePixPayload, generatePixQrCodeDataUrl, generateWhatsAppProofUrl } from '@/lib/pix';
-import { ShippingAddress, ShippingOption, PaymentMethod, Order } from '@/types';
+import { ShippingAddress, ShippingOption, PaymentMethod, Order, Affiliate } from '@/types';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -32,8 +35,16 @@ export default function CheckoutPage() {
     settings, 
     currentUser, 
     login, 
-    t 
+    t,
+    getAffiliateByCode,
+    activeAffiliateRef
   } = useStore();
+
+  // Affiliate / Coupon State
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedAffiliate, setAppliedAffiliate] = useState<Affiliate | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponSuccess, setCouponSuccess] = useState<string | null>(null);
 
   // Authentication State
   const [authEmail, setAuthEmail] = useState(currentUser?.email || '');
@@ -107,10 +118,47 @@ export default function CheckoutPage() {
     });
   }
 
-  // Active shipping cost
+  // Auto-apply referral code from store/localStorage
+  useEffect(() => {
+    const refCode = activeAffiliateRef || (typeof window !== 'undefined' ? localStorage.getItem('tiuba_reserve_affiliate_ref') : null);
+    if (refCode && !appliedAffiliate) {
+      const aff = getAffiliateByCode(refCode);
+      if (aff && aff.status === 'active') {
+        setAppliedAffiliate(aff);
+        setCouponSuccess(`Código de Embaixador ${aff.code} ativado automaticamente! (${aff.discount_rate}% OFF)`);
+      }
+    }
+  }, [activeAffiliateRef, getAffiliateByCode, appliedAffiliate]);
+
+  const handleApplyCoupon = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCouponError(null);
+    setCouponSuccess(null);
+    if (!couponInput.trim()) return;
+
+    const aff = getAffiliateByCode(couponInput.trim());
+    if (aff && aff.status === 'active') {
+      setAppliedAffiliate(aff);
+      setCouponSuccess(`Código ${aff.code} aplicado com sucesso! ${aff.discount_rate}% de desconto concedido.`);
+      setCouponInput('');
+    } else {
+      setCouponError('Código de afiliado inválido ou inativo.');
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedAffiliate(null);
+    setCouponSuccess(null);
+    setCouponError(null);
+  };
+
+  // Active shipping cost & Totals calculation
   const activeShippingObj = shippingOptions.find((o) => o.id === selectedShipping) || shippingOptions[0];
   const shippingCost = activeShippingObj.price;
-  const grandTotal = cartSubtotal + shippingCost;
+  const discountRate = appliedAffiliate ? appliedAffiliate.discount_rate : 0;
+  const discountAmount = appliedAffiliate ? Number(((cartSubtotal * discountRate) / 100).toFixed(2)) : 0;
+  const subtotalAfterDiscount = Math.max(0, cartSubtotal - discountAmount);
+  const grandTotal = subtotalAfterDiscount + shippingCost;
 
   // Auto-login or register handler
   const handleAuthSubmit = (e: React.FormEvent) => {
@@ -158,6 +206,9 @@ export default function CheckoutPage() {
         shipping_type: activeShippingObj.name,
         shipping_cost: shippingCost,
         total_amount: grandTotal,
+        discount_amount: discountAmount,
+        affiliate_id: appliedAffiliate?.id,
+        affiliate_code: appliedAffiliate?.code,
         shipping_address: address,
         payment_method: paymentMethod,
         payment_status: paymentMethod === 'pix' ? 'pending' : 'paid',
@@ -743,6 +794,66 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
+              {/* Affiliate / Coupon Code Input Section */}
+              <div className="border-t border-white/5 pt-4">
+                <label className="text-[11px] font-sans uppercase tracking-wider text-stone-300 font-bold block mb-2">
+                  {t('Código de Afiliado / Cupom de Embaixador', 'Affiliate / Ambassador Code')}
+                </label>
+
+                {appliedAffiliate ? (
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-gold-400/10 border border-gold-400/40 text-xs">
+                    <div className="flex items-center gap-2">
+                      <Tag className="w-4 h-4 text-gold-400" />
+                      <div>
+                        <span className="font-mono font-bold text-gold-300 uppercase">
+                          {appliedAffiliate.code}
+                        </span>
+                        <span className="text-[11px] text-stone-300 ml-2">
+                          ({appliedAffiliate.discount_rate}% OFF)
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveCoupon}
+                      className="text-stone-400 hover:text-red-400 p-1 transition-colors"
+                      title="Remover cupom"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Ex: CHEFANA ou TIUBA10"
+                      value={couponInput}
+                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                      className="flex-1 bg-onyx-950 border border-gold-400/20 rounded-xl px-3 py-2 text-xs text-foreground placeholder:text-stone-500 uppercase font-mono focus:border-gold-400 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleApplyCoupon}
+                      className="px-4 py-2 rounded-xl bg-gold-400/15 hover:bg-gold-400/25 border border-gold-400/40 text-gold-300 text-xs font-semibold tracking-wider uppercase transition-colors"
+                    >
+                      {t('Aplicar', 'Apply')}
+                    </button>
+                  </div>
+                )}
+
+                {couponSuccess && (
+                  <p className="text-[11px] text-emerald-400 mt-2 flex items-center gap-1 font-sans">
+                    <Sparkles className="w-3 h-3 shrink-0" />
+                    <span>{couponSuccess}</span>
+                  </p>
+                )}
+                {couponError && (
+                  <p className="text-[11px] text-red-400 mt-2 font-sans">
+                    {couponError}
+                  </p>
+                )}
+              </div>
+
               {/* Totals Breakdown */}
               <div className="border-t border-white/5 pt-4 space-y-2 text-xs font-sans">
                 <div className="flex justify-between text-stone-400">
@@ -751,6 +862,17 @@ export default function CheckoutPage() {
                     R$ {cartSubtotal.toFixed(2).replace('.', ',')}
                   </span>
                 </div>
+                {appliedAffiliate && discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-400 font-medium">
+                    <span className="flex items-center gap-1">
+                      <Tag className="w-3 h-3" />
+                      <span>Desconto ({appliedAffiliate.code} - {appliedAffiliate.discount_rate}%):</span>
+                    </span>
+                    <span className="font-mono font-bold">
+                      - R$ {discountAmount.toFixed(2).replace('.', ',')}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between text-stone-400">
                   <span>Frete ({activeShippingObj.name}):</span>
                   <span className="font-mono text-gold-300 font-bold">

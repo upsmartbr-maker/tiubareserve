@@ -5,6 +5,7 @@ import { CartProvider } from '@/context/CartContext';
 import CartDrawer from '@/components/CartDrawer';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import AffiliateTracker from '@/components/common/AffiliateTracker';
 
 export const metadata: Metadata = {
   title: 'TIÚBA RESERVE · Mel Nobre de Abelha Tiúba (Melipona fasciculata)',
@@ -36,6 +37,7 @@ export default function RootLayout({
           <CartProvider>
             <Navbar />
             <CartDrawer />
+            <AffiliateTracker />
             <main className="flex-1 w-full">
               {children}
             </main>

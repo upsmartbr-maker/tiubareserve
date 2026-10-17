@@ -15,11 +15,17 @@ import {
   SubscriptionShipment,
   ShipmentStatus,
   SubscriptionStatus,
-  ShippingAddress
+  ShippingAddress,
+  Affiliate,
+  AffiliateSale,
+  AffiliateStatus,
+  AffiliateSaleStatus,
+  AffiliateSaleItem
 } from '@/types';
 import { INITIAL_PRODUCTS } from '@/lib/data/products';
 import { INITIAL_LOTS } from '@/lib/data/lots';
 import { INITIAL_SETTINGS } from '@/lib/data/initialSettings';
+import { INITIAL_AFFILIATES, INITIAL_AFFILIATE_SALES } from '@/lib/data/affiliateData';
 import { 
   INITIAL_SUBSCRIPTION_PLANS, 
   INITIAL_SUBSCRIPTION_BOX, 
@@ -94,6 +100,27 @@ interface StoreContextType {
   login: (email: string, role?: 'client' | 'admin') => void;
   logout: () => void;
   isAdmin: boolean;
+
+  // Affiliates & Commissions
+  affiliates: Affiliate[];
+  affiliateSales: AffiliateSale[];
+  getAffiliateByCode: (code: string) => Affiliate | undefined;
+  createAffiliate: (data: Omit<Affiliate, 'id' | 'created_at'>) => Affiliate;
+  updateAffiliate: (id: string, data: Partial<Affiliate>) => void;
+  updateAffiliatePixKey: (codeOrId: string, pixKey: string) => void;
+  recordAffiliateSale: (params: {
+    orderId: string;
+    affiliateCode: string;
+    items: CartItem[];
+    subtotal: number;
+    discountAmount: number;
+    shippingState: string;
+    isPaid?: boolean;
+  }) => AffiliateSale | null;
+  updateAffiliateSaleStatus: (saleId: string, status: AffiliateSaleStatus, proofNote?: string) => void;
+  markAffiliateSaleAsPaid: (saleId: string, proofNote: string) => void;
+  activeAffiliateRef: string | null;
+  setActiveAffiliateRef: (code: string | null) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -110,6 +137,9 @@ const LOCAL_STORAGE_KEYS = {
   SUBSCRIPTIONS: 'tiuba_reserve_subs_v1',
   CURRENT_BOX: 'tiuba_reserve_current_box_v1',
   SHIPMENTS: 'tiuba_reserve_shipments_v1',
+  AFFILIATES: 'tiuba_reserve_affiliates_v1',
+  AFFILIATE_SALES: 'tiuba_reserve_affiliate_sales_v1',
+  AFFILIATE_REF: 'tiuba_reserve_affiliate_ref',
 };
 
 // Seed initial demo orders so admin dashboard is never empty
@@ -218,6 +248,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>(DEMO_SUBSCRIPTIONS);
   const [currentBox, setCurrentBox] = useState<SubscriptionBox>(INITIAL_SUBSCRIPTION_BOX);
   const [shipments, setShipments] = useState<SubscriptionShipment[]>(DEMO_SHIPMENTS);
+  const [affiliates, setAffiliates] = useState<Affiliate[]>(INITIAL_AFFILIATES);
+  const [affiliateSales, setAffiliateSales] = useState<AffiliateSale[]>(INITIAL_AFFILIATE_SALES);
+  const [activeAffiliateRef, setActiveAffiliateRefState] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>({
     id: 'admin-001',
     email: 'admin@tiubareserve.com.br',
@@ -263,6 +296,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
       const savedShipments = localStorage.getItem(LOCAL_STORAGE_KEYS.SHIPMENTS);
       if (savedShipments) setShipments(JSON.parse(savedShipments));
+
+      const savedAffiliates = localStorage.getItem(LOCAL_STORAGE_KEYS.AFFILIATES);
+      if (savedAffiliates) setAffiliates(JSON.parse(savedAffiliates));
+
+      const savedAffiliateSales = localStorage.getItem(LOCAL_STORAGE_KEYS.AFFILIATE_SALES);
+      if (savedAffiliateSales) setAffiliateSales(JSON.parse(savedAffiliateSales));
+
+      const savedRef = localStorage.getItem(LOCAL_STORAGE_KEYS.AFFILIATE_REF);
+      if (savedRef) setActiveAffiliateRefState(savedRef);
     } catch (e) {
       console.error('Error hydrating store from localStorage', e);
     }
@@ -386,6 +428,42 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     });
 
     clearCart();
+
+    // Check if order used affiliate code and record commission
+    if (newOrder.affiliate_code) {
+      const affiliate = affiliates.find(
+        a => a.code.toUpperCase() === newOrder.affiliate_code?.toUpperCase() && a.status === 'active'
+      );
+      if (affiliate) {
+        const netAmount = Math.max(0, newOrder.subtotal - (newOrder.discount_amount || 0));
+        const commAmount = Number(((netAmount * affiliate.commission_rate) / 100).toFixed(2));
+        const saleRecord: AffiliateSale = {
+          id: `sale-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          affiliate_id: affiliate.id,
+          affiliate_code: affiliate.code,
+          order_id: newOrder.id,
+          items_summary: newOrder.items.map(it => ({
+            name: it.product.name,
+            quantity: it.quantity,
+            unit_price: it.product.promo_price || it.product.price,
+          })),
+          gross_amount: Number(newOrder.subtotal.toFixed(2)),
+          discount_amount: Number((newOrder.discount_amount || 0).toFixed(2)),
+          net_amount: Number(netAmount.toFixed(2)),
+          commission_amount: commAmount,
+          shipping_state: (newOrder.shipping_address?.state || 'SP').slice(0, 2).toUpperCase(),
+          status: newOrder.payment_status === 'paid' ? 'approved' : 'pending',
+          created_at: new Date().toISOString(),
+        };
+
+        setAffiliateSales(prev => {
+          const updatedSales = [saleRecord, ...prev];
+          if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.AFFILIATE_SALES, JSON.stringify(updatedSales));
+          return updatedSales;
+        });
+      }
+    }
+
     return newOrder;
   };
 
@@ -405,6 +483,39 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.ORDERS, JSON.stringify(updated));
       return updated;
     });
+
+    // Automatically synchronize affiliate commission status
+    if (status === 'paid') {
+      setAffiliateSales(prev => {
+        let hasChanges = false;
+        const updated = prev.map(sale => {
+          if (sale.order_id === orderId && sale.status === 'pending') {
+            hasChanges = true;
+            return { ...sale, status: 'approved' as AffiliateSaleStatus };
+          }
+          return sale;
+        });
+        if (hasChanges && isClient) {
+          localStorage.setItem(LOCAL_STORAGE_KEYS.AFFILIATE_SALES, JSON.stringify(updated));
+        }
+        return updated;
+      });
+    } else if (status === 'cancelled') {
+      setAffiliateSales(prev => {
+        let hasChanges = false;
+        const updated = prev.map(sale => {
+          if (sale.order_id === orderId && sale.status !== 'paid') {
+            hasChanges = true;
+            return { ...sale, status: 'canceled' as AffiliateSaleStatus };
+          }
+          return sale;
+        });
+        if (hasChanges && isClient) {
+          localStorage.setItem(LOCAL_STORAGE_KEYS.AFFILIATE_SALES, JSON.stringify(updated));
+        }
+        return updated;
+      });
+    }
   };
 
   const attachProofToOrder = (orderId: string, proofUrl: string) => {
@@ -684,6 +795,143 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (isClient) localStorage.removeItem(LOCAL_STORAGE_KEYS.USER);
   };
 
+  // Affiliates & Commissions Management
+  const getAffiliateByCode = (code: string) => {
+    if (!code) return undefined;
+    const clean = code.trim().toUpperCase();
+    return affiliates.find(a => a.code.toUpperCase() === clean);
+  };
+
+  const createAffiliate = (data: Omit<Affiliate, 'id' | 'created_at'>): Affiliate => {
+    const cleanCode = data.code.trim().toUpperCase();
+    const newAff: Affiliate = {
+      ...data,
+      id: `aff-${Date.now()}`,
+      code: cleanCode,
+      commission_rate: Number(data.commission_rate) || 10.0,
+      discount_rate: Number(data.discount_rate) || 5.0,
+      created_at: new Date().toISOString(),
+    };
+    setAffiliates(prev => {
+      const updated = [newAff, ...prev];
+      if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.AFFILIATES, JSON.stringify(updated));
+      return updated;
+    });
+    return newAff;
+  };
+
+  const updateAffiliate = (id: string, data: Partial<Affiliate>) => {
+    setAffiliates(prev => {
+      const updated = prev.map(a => (a.id === id ? { ...a, ...data, updated_at: new Date().toISOString() } : a));
+      if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.AFFILIATES, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const updateAffiliatePixKey = (codeOrId: string, pixKey: string) => {
+    const target = codeOrId.trim().toUpperCase();
+    setAffiliates(prev => {
+      const updated = prev.map(a => {
+        if (a.id === codeOrId || a.code.toUpperCase() === target) {
+          return { ...a, pix_key: pixKey, updated_at: new Date().toISOString() };
+        }
+        return a;
+      });
+      if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.AFFILIATES, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const recordAffiliateSale = ({
+    orderId,
+    affiliateCode,
+    items,
+    subtotal,
+    discountAmount,
+    shippingState,
+    isPaid = false,
+  }: {
+    orderId: string;
+    affiliateCode: string;
+    items: CartItem[];
+    subtotal: number;
+    discountAmount: number;
+    shippingState: string;
+    isPaid?: boolean;
+  }): AffiliateSale | null => {
+    const affiliate = affiliates.find(
+      a => a.code.toUpperCase() === affiliateCode.trim().toUpperCase() && a.status === 'active'
+    );
+    if (!affiliate) return null;
+
+    const netAmount = Math.max(0, subtotal - discountAmount);
+    const commAmount = Number(((netAmount * affiliate.commission_rate) / 100).toFixed(2));
+
+    const sale: AffiliateSale = {
+      id: `sale-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      affiliate_id: affiliate.id,
+      affiliate_code: affiliate.code,
+      order_id: orderId,
+      items_summary: items.map(i => ({
+        name: i.product.name,
+        quantity: i.quantity,
+        unit_price: i.product.promo_price || i.product.price,
+      })),
+      gross_amount: Number(subtotal.toFixed(2)),
+      discount_amount: Number(discountAmount.toFixed(2)),
+      net_amount: Number(netAmount.toFixed(2)),
+      commission_amount: commAmount,
+      shipping_state: shippingState.slice(0, 2).toUpperCase() || 'SP',
+      status: isPaid ? 'approved' : 'pending',
+      created_at: new Date().toISOString(),
+    };
+
+    setAffiliateSales(prev => {
+      const filtered = prev.filter(s => s.order_id !== orderId);
+      const updated = [sale, ...filtered];
+      if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.AFFILIATE_SALES, JSON.stringify(updated));
+      return updated;
+    });
+
+    return sale;
+  };
+
+  const updateAffiliateSaleStatus = (saleId: string, status: AffiliateSaleStatus, proofNote?: string) => {
+    setAffiliateSales(prev => {
+      const updated = prev.map(s => {
+        if (s.id === saleId) {
+          return {
+            ...s,
+            status,
+            paid_at: status === 'paid' ? new Date().toISOString() : s.paid_at,
+            payment_proof_note: proofNote !== undefined ? proofNote : s.payment_proof_note,
+          };
+        }
+        return s;
+      });
+      if (isClient) localStorage.setItem(LOCAL_STORAGE_KEYS.AFFILIATE_SALES, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const markAffiliateSaleAsPaid = (saleId: string, proofNote: string) => {
+    updateAffiliateSaleStatus(saleId, 'paid', proofNote);
+  };
+
+  const setActiveAffiliateRef = (code: string | null) => {
+    const clean = code ? code.trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10) : null;
+    setActiveAffiliateRefState(clean);
+    if (isClient) {
+      if (clean) {
+        localStorage.setItem(LOCAL_STORAGE_KEYS.AFFILIATE_REF, clean);
+        document.cookie = `tiuba_ref=${clean}; max-age=${30 * 24 * 60 * 60}; path=/`;
+      } else {
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.AFFILIATE_REF);
+        document.cookie = `tiuba_ref=; max-age=0; path=/`;
+      }
+    }
+  };
+
   const isAdmin = currentUser?.role === 'admin';
 
   return (
@@ -732,6 +980,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         login,
         logout,
         isAdmin,
+        affiliates,
+        affiliateSales,
+        getAffiliateByCode,
+        createAffiliate,
+        updateAffiliate,
+        updateAffiliatePixKey,
+        recordAffiliateSale,
+        updateAffiliateSaleStatus,
+        markAffiliateSaleAsPaid,
+        activeAffiliateRef,
+        setActiveAffiliateRef,
       }}
     >
       {children}
